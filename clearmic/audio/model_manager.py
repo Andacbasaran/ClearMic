@@ -40,6 +40,10 @@ def get_models_dir() -> Path:
 
 
 def get_model_path(spec: ModelSpec = GTCRN_MODEL) -> Path:
+    if getattr(sys, "frozen", False):
+        bundled = Path(getattr(sys, "_MEIPASS", "")) / "models" / spec.filename
+        if bundled.exists() and bundled.stat().st_size >= spec.expected_min_bytes:
+            return bundled
     return get_models_dir() / spec.filename
 
 

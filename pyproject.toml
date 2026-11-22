@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "clearmic"
-version = "0.1.0"
+version = "0.2.0"
 description = "%100 offline, 0 MB VRAM, ultra düşük gecikmeli AI mikrofon gürültü engelleyici"
 readme = "README.md"
 requires-python = ">=3.10"
