@@ -1,0 +1,56 @@
+name: Bug Report
+description: Report a crash, audio glitch, virtual mic routing bug, or UI issue in ClearMic.
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping improve ClearMic! Please include your audio devices and OS so we can reproduce the issue quickly.
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the bug and what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Select input mic and output virtual cable
+        2. Enable preset ...
+        3. Click Start
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Windows 11 (x64)
+        - Windows 10 (x64)
+        - macOS (Apple Silicon M1/M2/M3/M4)
+        - macOS (Intel x86_64)
+        - Linux (PipeWire)
+        - Linux (PulseAudio / ALSA / JACK)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: ClearMic Version
+      placeholder: "e.g. v1.0.0"
+    validations:
+      required: true
+  - type: textarea
+    id: audio_setup
+    attributes:
+      label: Audio Hardware & Virtual Mic Driver
+      placeholder: "Mic: HyperX SoloCast (48 kHz), Virtual Mic: VB-Cable / BlackHole 2ch / PipeWire, Host API: WASAPI / Core Audio"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error message or crash.log
+      description: Paste any error message or contents of `crash.log` if available.
+      render: text

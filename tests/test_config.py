@@ -1,6 +1,7 @@
 """Tests for persistent JSON configuration."""
 
 from pathlib import Path
+
 from clearmic.config import ClearMicConfig
 
 

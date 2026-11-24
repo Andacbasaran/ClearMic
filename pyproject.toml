@@ -4,25 +4,85 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "clearmic"
-version = "0.2.0"
-description = "%100 offline, 0 MB VRAM, ultra düşük gecikmeli AI mikrofon gürültü engelleyici"
+version = "1.0.0"
+description = "100% offline, 0 MB VRAM, ultra-low-latency AI microphone noise suppressor & broadcast voice studio."
 readme = "README.md"
+license = { file = "LICENSE" }
 requires-python = ">=3.10"
+authors = [
+    { name = "Andac Basaran" }
+]
+keywords = [
+    "noise-suppression",
+    "audio",
+    "microphone",
+    "dsp",
+    "gtcrn",
+    "onnx",
+    "broadcast",
+    "voice-studio",
+    "pyqt6",
+    "offline",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Sound/Audio",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+]
 dependencies = [
     "PyQt6>=6.6.0",
     "sounddevice>=0.4.6",
     "numpy>=1.24.0",
     "scipy>=1.11.0",
     "onnxruntime>=1.17.0",
+    "pillow>=10.0.0",
+    "certifi>=2024.0.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0.0",
+    "ruff>=0.6.0",
+    "pyinstaller>=6.0.0",
 ]
 
 [project.scripts]
 clearmic = "clearmic.main:main"
 
+[project.urls]
+Homepage = "https://clearmic.andacbasaran.com"
+Repository = "https://github.com/Andacbasaran/ClearMic"
+Issues = "https://github.com/Andacbasaran/ClearMic/issues"
+Changelog = "https://github.com/Andacbasaran/ClearMic/blob/main/CHANGELOG.md"
+
 [tool.setuptools.packages.find]
 include = ["clearmic*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 110
+exclude = [
+    ".venv",
+    "build",
+    "dist",
+    "models",
+    "release_out",
+    "website",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501", "E402"]

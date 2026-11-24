@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
-import numpy as np
-from scipy.signal import butter, sosfilt
+from dataclasses import dataclass
 
+import numpy as np
+from scipy.signal import butter, sosfilt, sosfreqz
 
 EPS = 1e-8
 
@@ -28,10 +28,15 @@ def rms_db(audio: np.ndarray, floor_db: float = -80.0) -> float:
     return linear_to_db(rms, floor_db=floor_db)
 
 
+def _clamp_freq(sr: int, freq: float) -> float:
+    return max(20.0, min(freq, 0.45 * sr))
+
+
 def _biquad_low_shelf(sr: int, freq: float, gain_db: float, slope: float = 0.8) -> np.ndarray:
     """RBJ Audio EQ Cookbook low-shelf biquad as a 1x6 SOS row."""
     if abs(gain_db) < 0.05:
         return np.array([[1.0, 0.0, 0.0, 1.0, 0.0, 0.0]], dtype=np.float64)
+    freq = _clamp_freq(sr, freq)
     a = 10.0 ** (gain_db / 40.0)
     w0 = 2.0 * math.pi * freq / sr
     cos_w0 = math.cos(w0)
@@ -52,6 +57,7 @@ def _biquad_high_shelf(sr: int, freq: float, gain_db: float, slope: float = 0.8)
     """RBJ Audio EQ Cookbook high-shelf biquad as a 1x6 SOS row."""
     if abs(gain_db) < 0.05:
         return np.array([[1.0, 0.0, 0.0, 1.0, 0.0, 0.0]], dtype=np.float64)
+    freq = _clamp_freq(sr, freq)
     a = 10.0 ** (gain_db / 40.0)
     w0 = 2.0 * math.pi * freq / sr
     cos_w0 = math.cos(w0)
@@ -72,6 +78,7 @@ def _biquad_peaking(sr: int, freq: float, gain_db: float, q: float = 1.1) -> np.
     """RBJ Audio EQ Cookbook peaking EQ biquad as a 1x6 SOS row."""
     if abs(gain_db) < 0.05:
         return np.array([[1.0, 0.0, 0.0, 1.0, 0.0, 0.0]], dtype=np.float64)
+    freq = _clamp_freq(sr, freq)
     a = 10.0 ** (gain_db / 40.0)
     w0 = 2.0 * math.pi * freq / sr
     cos_w0 = math.cos(w0)
@@ -169,23 +176,80 @@ class VoiceEqualizer3Band:
         return out.astype(np.float32)
 
 
+def compute_eq_curve_db(
+    freqs_hz: np.ndarray,
+    sample_rate: int = 48000,
+    *,
+    eq_enabled: bool = True,
+    eq_low_db: float = 0.0,
+    eq_mid_db: float = 0.0,
+    eq_high_db: float = 0.0,
+    hpf_enabled: bool = True,
+    hpf_cutoff_hz: float = 85.0,
+) -> np.ndarray:
+    """Evaluate exact combined frequency response (in dB) of HPF + 3-Band Voice EQ."""
+    sos_sections: list[np.ndarray] = []
+    if hpf_enabled:
+        sos_sections.append(HighPassFilter._design(sample_rate, hpf_cutoff_hz))
+    if eq_enabled:
+        sos_sections.append(_biquad_low_shelf(sample_rate, 120.0, eq_low_db))
+        sos_sections.append(_biquad_peaking(sample_rate, 2800.0, eq_mid_db, q=1.0))
+        sos_sections.append(_biquad_high_shelf(sample_rate, 8000.0, eq_high_db))
+
+    if not sos_sections:
+        return np.zeros_like(freqs_hz, dtype=np.float32)
+
+    combined = np.vstack(sos_sections)
+    safe_freqs = np.clip(freqs_hz, 1.0, 0.49 * sample_rate)
+    _, h = sosfreqz(combined, worN=safe_freqs, fs=sample_rate)
+    mag = np.maximum(np.abs(h), 1e-6)
+    return (20.0 * np.log10(mag)).astype(np.float32)
+
+
 class DeEsser:
-    """Split-band dynamic sibilance reducer targeting harsh 5.2–9.5 kHz 'S/Ş' peaks."""
+    """Split-band dynamic sibilance reducer targeting harsh 5.2–9.5 kHz 'S/Ş' peaks.
+
+    Safely adapts bandpass cutoffs to any sample rate (including 16 kHz) without exceeding Nyquist.
+    """
 
     def __init__(self, sample_rate: int = 48000, amount: float = 0.45) -> None:
         self.sample_rate = sample_rate
         self.amount = amount
-        nyq = 0.5 * sample_rate
-        self._bp_sos = butter(2, [5200.0 / nyq, 9500.0 / nyq], btype="bandpass", output="sos")
-        self._zi = np.zeros((self._bp_sos.shape[0], 2), dtype=np.float64)
+        self._bp_sos: np.ndarray | None = None
+        self._zi = np.zeros((2, 2), dtype=np.float64)
         self._gain = 1.0
+        self._design(sample_rate)
+
+    def _design(self, sample_rate: int) -> None:
+        nyq = 0.5 * sample_rate
+        max_safe = 0.48 * sample_rate
+        high_hz = min(9500.0, max_safe)
+        low_hz = min(5200.0, high_hz * 0.72)
+        if high_hz <= low_hz + 150.0 or nyq <= 5000.0:
+            self._bp_sos = None
+            self._zi = np.zeros((1, 2), dtype=np.float64)
+            return
+        self._bp_sos = butter(
+            2,
+            [low_hz / nyq, high_hz / nyq],
+            btype="bandpass",
+            output="sos",
+        )
+        self._zi = np.zeros((self._bp_sos.shape[0], 2), dtype=np.float64)
+
+    def configure(self, sample_rate: int, amount: float) -> None:
+        self.amount = amount
+        if sample_rate != self.sample_rate:
+            self.sample_rate = sample_rate
+            self._design(sample_rate)
+            self._gain = 1.0
 
     def reset(self) -> None:
         self._zi.fill(0.0)
         self._gain = 1.0
 
     def process(self, audio: np.ndarray) -> np.ndarray:
-        if audio.size == 0 or self.amount <= 0.01:
+        if audio.size == 0 or self.amount <= 0.01 or self._bp_sos is None:
             return audio
         sib, self._zi = sosfilt(self._bp_sos, audio.astype(np.float64, copy=False), zi=self._zi)
         sib_f32 = sib.astype(np.float32)
@@ -208,7 +272,6 @@ class DeEsser:
 
         if next_gain >= 0.995:
             return audio
-        # Subtract only the excess sibilant band
         return (audio - sib_f32 * np.float32(1.0 - next_gain)).astype(np.float32)
 
 
@@ -254,7 +317,6 @@ class StudioCompressor:
         elif over >= half_knee:
             target_gr_db = (1.0 / self.ratio - 1.0) * over
         else:
-            # Smooth quadratic soft knee
             x = over + half_knee
             target_gr_db = (1.0 / self.ratio - 1.0) * (x * x) / (2.0 * self.knee_db)
 
@@ -262,7 +324,6 @@ class StudioCompressor:
         alpha = 1.0 - math.exp(-n / (self.sample_rate * max(0.002, time_ms / 1000.0)))
         next_gr_db = self._gr_db + alpha * (target_gr_db - self._gr_db)
 
-        # Gentle automatic makeup gain proportional to compression threshold/ratio
         makeup_db = min(5.0, max(0.0, (-self.threshold_db - 12.0) * 0.18 * (1.0 - 1.0 / self.ratio)))
         start_lin = db_to_linear(self._gr_db + makeup_db)
         end_lin = db_to_linear(next_gr_db + makeup_db)

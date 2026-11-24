@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
+PackageIdentifier: Andacbasaran.ClearMic
+PackageVersion: 1.0.0
+PackageLocale: en-US
+Publisher: Andac Basaran
+PublisherUrl: https://clearmic.andacbasaran.com
+PublisherSupportUrl: https://github.com/Andacbasaran/ClearMic/issues
+PackageName: ClearMic
+PackageUrl: https://clearmic.andacbasaran.com
+License: MIT
+LicenseUrl: https://github.com/Andacbasaran/ClearMic/blob/main/LICENSE
+ShortDescription: 100% offline, 0 MB VRAM AI microphone noise suppressor & broadcast voice studio.
+Description: >-
+  ClearMic removes mechanical keyboard clicks, PC fans, AC hum, and background noise
+  in real time on CPU with 0 MB VRAM using streaming GTCRN ONNX neural speech enhancement
+  paired with a full broadcast DSP rack (HPF, Noise Gate, De-Esser, 3-Band Voice EQ,
+  Studio Compressor, AGC, and split-band 7.2-20 kHz vocal air preservation).
+Tags:
+  - audio
+  - microphone
+  - noise-suppression
+  - noise-cancellation
+  - broadcast
+  - dsp
+  - onnx
+  - discord
+  - podcast
+  - offline
+ReleaseNotesUrl: https://github.com/Andacbasaran/ClearMic/releases/tag/v1.0.0
+ManifestType: defaultLocale
+ManifestVersion: 1.6.0

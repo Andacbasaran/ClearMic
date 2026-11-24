@@ -1,0 +1,32 @@
+{
+    "version": "1.0.0",
+    "description": "100% offline, 0 MB VRAM, ultra-low-latency AI microphone noise suppressor & broadcast voice studio.",
+    "homepage": "https://clearmic.andacbasaran.com",
+    "license": "MIT",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/Andacbasaran/ClearMic/releases/download/v1.0.0/ClearMic-Portable-v1.0.0-Windows-x64.zip",
+            "hash": "REPLACE_WITH_SHA256_FROM_RELEASE_SHA256SUMS_TXT"
+        }
+    },
+    "shortcuts": [
+        [
+            "ClearMic.exe",
+            "ClearMic"
+        ]
+    ],
+    "notes": "For virtual microphone routing on Windows, install VB-Audio Virtual Cable: https://vb-audio.com/Cable/",
+    "checkver": {
+        "github": "https://github.com/Andacbasaran/ClearMic"
+    },
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/Andacbasaran/ClearMic/releases/download/v$version/ClearMic-Portable-v$version-Windows-x64.zip",
+                "hash": {
+                    "url": "$baseurl/SHA256SUMS.txt"
+                }
+            }
+        }
+    }
+}

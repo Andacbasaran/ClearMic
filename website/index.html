@@ -1,0 +1,3350 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>ClearMic — Sadece Sesiniz. Gürültü Sıfır.</title>
+  <meta name="description" content="Windows, macOS Apple Silicon ve Linux için ~0.84 ms CPU gecikmeli, -47.0 dB AI gürültü gidermeli, 0 MB VRAM ve %100 çevrimdışı açık kaynak gerçek zamanlı mikrofon gürültü engelleyici ve yayın ses stüdyosu." />
+  <meta name="keywords" content="ClearMic, AI noise suppressor, real-time microphone denoiser, GTCRN ONNX, NVIDIA Broadcast alternative, 0 MB VRAM, offline voice studio, Discord noise suppression, OBS microphone filter, Windows, macOS Apple Silicon, Linux, yapay zeka mikrofon gürültü engelleyici" />
+  <meta name="author" content="Andac Basaran" />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <meta name="theme-color" content="#0A0A0D" />
+  <meta name="color-scheme" content="dark" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="ClearMic" />
+  <meta property="og:url" content="https://clearmic.andacbasaran.com/" />
+  <meta property="og:locale" content="tr_TR" />
+  <meta property="og:locale:alternate" content="en_US" />
+  <meta property="og:title" content="ClearMic — Sadece Sesiniz. Gürültü Sıfır." />
+  <meta property="og:description" content="GTCRN ONNX CPU ve yayın DSP zinciriyle ~0.84 ms gecikme, -47.0 dB gürültü düşüşü ve 0 MB VRAM sunan açık kaynak gerçek zamanlı mikrofon stüdyosu." />
+  <meta property="og:image" content="https://clearmic.andacbasaran.com/assets/ui_preview.png?v=1.0.0" />
+  <meta property="og:image:alt" content="ClearMic Studio v1.0.0 — Gerçek Zamanlı AI Mikrofon Gürültü Engelleyici Arayüzü" />
+  <meta property="og:image:width" content="960" />
+  <meta property="og:image:height" content="640" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="ClearMic — Sadece Sesiniz. Gürültü Sıfır." />
+  <meta name="twitter:description" content="GTCRN ONNX CPU ve yayın DSP zinciriyle ~0.84 ms gecikme, -47.0 dB gürültü düşüşü ve 0 MB VRAM sunan açık kaynak gerçek zamanlı mikrofon stüdyosu." />
+  <meta name="twitter:image" content="https://clearmic.andacbasaran.com/assets/ui_preview.png?v=1.0.0" />
+  <meta name="twitter:image:alt" content="ClearMic Studio v1.0.0 — Gerçek Zamanlı AI Mikrofon Gürültü Engelleyici Arayüzü" />
+
+  <link rel="canonical" href="https://clearmic.andacbasaran.com/" />
+  <link rel="alternate" hreflang="tr" href="https://clearmic.andacbasaran.com/tr" />
+  <link rel="alternate" hreflang="en" href="https://clearmic.andacbasaran.com/en" />
+  <link rel="alternate" hreflang="x-default" href="https://clearmic.andacbasaran.com/" />
+
+  <link rel="icon" type="image/png" href="/assets/app_icon.png?v=1.0.0" />
+  <link rel="shortcut icon" href="/favicon.ico?v=1.0.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "ClearMic",
+    "alternateName": "ClearMic AI Voice Studio",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "Windows 10, Windows 11, macOS 13+ (Apple Silicon), Linux (x86_64)",
+    "softwareVersion": "1.0.0",
+    "inLanguage": ["en", "tr"],
+    "isAccessibleForFree": true,
+    "license": "https://opensource.org/licenses/MIT",
+    "url": "https://clearmic.andacbasaran.com/",
+    "downloadUrl": "https://github.com/Andacbasaran/ClearMic/releases/latest",
+    "codeRepository": "https://github.com/Andacbasaran/ClearMic",
+    "screenshot": "https://clearmic.andacbasaran.com/assets/ui_preview.png?v=1.0.0",
+    "description": "Ultra-low-latency (~0.84 ms P50 CPU, 18.9x real-time headroom), -47.0 dB average noise attenuation, +28.7 dB speech SNR gain, 0 MB VRAM, 100% offline open-source real-time AI microphone noise suppressor and broadcast voice studio.",
+    "featureList": [
+      "~0.84 ms P50 end-to-end GTCRN ONNX CPU + broadcast DSP chain (18.9x real-time headroom)",
+      "-47.0 dB average noise attenuation (-59.9 dB 60 Hz hum, -52.2 dB hiss, -49.6 dB mechanical keyboard, -26.2 dB PC fan)",
+      "+28.7 dB speech SNR gain with 7.2-20 kHz split-band vocal air preservation",
+      "0 MB VRAM usage and 100% offline local CPU inference",
+      "Real-time 32-band dual-layer FFT spectrum analyzer and interactive DSP signal chain",
+      "Voice Sculptor with live HPF + 3-Band Studio EQ curve, De-Esser, Compressor, and AGC",
+      "6-second live A/B comparison lab and batch offline .WAV file cleaner",
+      "Virtual microphone routing for Discord, OBS, Zoom, and Teams (VB-Cable, BlackHole, PipeWire)"
+    ],
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Andac Basaran",
+      "url": "https://andacbasaran.com"
+    }
+  }
+  </script>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0A0A0D;
+      --surface: #131318;
+      --surface-elevated: #1B1B22;
+      --border: #26262F;
+      --border-strong: #3E3E4B;
+      --text: #FAFAFA;
+      --muted: #A1A1AA;
+      --subtle: #868692;
+      --accent: #06B6D4;
+      --accent-bright: #67E8F9;
+      --accent-soft: rgba(6, 182, 212, 0.14);
+      --emerald: #10B981;
+      --emerald-soft: rgba(16, 185, 129, 0.12);
+      --amber: #F59E0B;
+      --amber-soft: rgba(245, 158, 11, 0.15);
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    a:focus-visible,
+    button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* Architectural dot-grid + GPU-composited cursor spotlight */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.065) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: radial-gradient(ellipse 80% 70% at 50% 45%, #000 35%, transparent 100%);
+    }
+
+    .cursor-glow {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 520px;
+      height: 520px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.095) 0%, rgba(6, 182, 212, 0.03) 35%, transparent 70%);
+      transform: translate3d(-999px, -999px, 0);
+      will-change: transform, opacity;
+      transition: opacity 0.4s ease;
+    }
+
+    @media (pointer: coarse), (prefers-reduced-motion: reduce) {
+      .cursor-glow {
+        display: none;
+      }
+    }
+
+    /* Topbar */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      z-index: 50;
+      background: rgba(10, 10, 13, 0.82);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: -0.02em;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-family: inherit;
+    }
+
+    .brand img {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      display: block;
+      flex-shrink: 0;
+      transition: transform 0.25s var(--ease-spring);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .brand:hover img {
+        transform: scale(1.06) rotate(-2deg);
+      }
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .top-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.84rem;
+      font-weight: 500;
+      color: var(--muted);
+      transition: color 0.18s ease;
+      white-space: nowrap;
+    }
+
+    .top-link:hover {
+      color: var(--text);
+    }
+
+    /* Compact Segmented Language Switcher */
+    .lang-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 2px;
+      border-radius: 7px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+
+    .lang-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      min-block-size: 28px;
+      min-inline-size: 32px;
+      padding: 4px 8px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: color 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
+    }
+
+    .lang-btn:hover {
+      color: var(--text);
+    }
+
+    .lang-btn[aria-pressed="true"] {
+      background: #25252E;
+      border-color: var(--border-strong);
+      color: var(--text);
+    }
+
+    .btn-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--text);
+      border: 1px solid var(--text);
+      color: #09090B;
+      font-size: 0.82rem;
+      font-weight: 700;
+      min-block-size: 32px;
+      padding: 6px 14px;
+      border-radius: 7px;
+      white-space: nowrap;
+      transition: background-color 0.18s ease, transform 0.18s var(--ease-spring);
+    }
+
+    .btn-pill:hover {
+      background: #E4E4E7;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .btn-pill:hover {
+        transform: translateY(-1px);
+      }
+      .btn-pill:active {
+        transform: translateY(0) scale(0.98);
+      }
+    }
+
+    /* Right-side Scene Progress Rail */
+    .scene-rail {
+      position: fixed;
+      right: 22px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 45;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .rail-dot {
+      width: 8px;
+      height: 8px;
+      min-block-size: 24px;
+      min-inline-size: 24px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      padding: 0;
+    }
+
+    .rail-dot::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--border-strong);
+      transition: background-color 0.25s ease, transform 0.3s var(--ease-spring);
+    }
+
+    .rail-dot:hover::before {
+      background: var(--muted);
+    }
+
+    .rail-dot.active::before {
+      background: var(--accent);
+      transform: scaleY(3.2);
+    }
+
+    /* Stage & Scenes */
+    .stage {
+      position: relative;
+      width: 100%;
+      height: 100dvh;
+      z-index: 10;
+    }
+
+    .scene {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 72px 24px 82px;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .scene {
+        transform: translate3d(0, 24px, 0) scale(0.99);
+        transition:
+          opacity 0.45s var(--ease-out),
+          transform 0.55s var(--ease-out);
+      }
+
+      .scene.prev {
+        transform: translate3d(0, -24px, 0) scale(0.99);
+      }
+
+      /* Staggered reveal choreography inside active scene */
+      .scene [data-reveal] {
+        opacity: 0;
+        transform: translate3d(0, 14px, 0);
+        transition:
+          opacity 0.5s var(--ease-out),
+          transform 0.6s var(--ease-out);
+      }
+
+      .scene.active [data-reveal] {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+
+      .scene.active [data-reveal="1"] { transition-delay: 40ms; }
+      .scene.active [data-reveal="2"] { transition-delay: 95ms; }
+      .scene.active [data-reveal="3"] { transition-delay: 150ms; }
+      .scene.active [data-reveal="4"] { transition-delay: 205ms; }
+      .scene.active [data-reveal="5"] { transition-delay: 260ms; }
+    }
+
+    .scene.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    /* SCENE 0: HERO */
+    .logo-showcase {
+      margin-bottom: 18px;
+      position: relative;
+      display: inline-block;
+    }
+
+    .logo-showcase img {
+      width: 76px;
+      height: 76px;
+      border-radius: 18px;
+      border: 1px solid var(--border-strong);
+      display: block;
+      position: relative;
+      z-index: 2;
+      box-shadow: 0 12px 34px rgba(0, 0, 0, 0.55);
+      transition: transform 0.35s var(--ease-spring), border-color 0.25s ease;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .logo-showcase::after {
+        content: "";
+        position: absolute;
+        inset: -8px;
+        border-radius: 24px;
+        border: 1px solid rgba(6, 182, 212, 0.28);
+        pointer-events: none;
+        animation: logo-ring-breathe 4.2s ease-in-out infinite;
+      }
+
+      .logo-showcase:hover img {
+        transform: translateY(-3px) scale(1.04);
+        border-color: rgba(6, 182, 212, 0.65);
+      }
+    }
+
+    @keyframes logo-ring-breathe {
+      0%, 100% { opacity: 0.35; transform: scale(1); }
+      50% { opacity: 0.9; transform: scale(1.045); }
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 0.74rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .live-dot {
+        animation: pulse-dot 2.4s ease-in-out infinite;
+      }
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.25); opacity: 0.7; }
+    }
+
+    .eyebrow {
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .headline {
+      font-size: clamp(2.1rem, 5vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1.07;
+      letter-spacing: -0.035em;
+      max-width: 820px;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+
+    .headline--md {
+      font-size: clamp(1.55rem, 3.5vw, 2.55rem);
+      margin-bottom: 14px;
+    }
+
+    .headline--sm {
+      font-size: clamp(1.42rem, 3vw, 2.22rem);
+      margin-bottom: 10px;
+    }
+
+    .headline .accent-text {
+      color: var(--accent);
+      background: linear-gradient(120deg, #67E8F9 0%, #06B6D4 55%, #10B981 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subhead {
+      font-size: clamp(0.95rem, 1.4vw, 1.06rem);
+      color: var(--muted);
+      max-width: 580px;
+      font-weight: 400;
+      line-height: 1.55;
+      margin-bottom: 24px;
+    }
+
+    /* CTAs */
+    .cta-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: var(--text);
+      color: #09090B;
+      border: 1px solid var(--text);
+      padding: 12px 23px;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      position: relative;
+      transition: background-color 0.18s ease, box-shadow 0.22s ease, transform 0.2s var(--ease-spring);
+    }
+
+    .btn-download:hover {
+      background: #EFEFF3;
+      box-shadow: 0 8px 24px rgba(6, 182, 212, 0.18);
+    }
+
+    .btn-download-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      background: var(--surface-elevated);
+      color: var(--text);
+      border: 1px solid var(--border-strong);
+      padding: 12px 21px;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.2s var(--ease-spring);
+    }
+
+    .btn-download-secondary:hover {
+      background: #25252E;
+      border-color: var(--muted);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .btn-download:hover,
+      .btn-download-secondary:hover {
+        transform: translateY(-2px);
+      }
+      .btn-download:active,
+      .btn-download-secondary:active {
+        transform: translateY(0) scale(0.985);
+      }
+    }
+
+    .caption-small {
+      margin-top: 11px;
+      font-size: 0.8rem;
+      color: var(--subtle);
+      line-height: 1.45;
+    }
+
+    .caption-small a {
+      color: var(--muted);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      transition: color 0.16s ease;
+    }
+
+    .caption-small a:hover {
+      color: var(--text);
+    }
+
+    .ecosystem-line {
+      margin-top: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.02em;
+      color: var(--subtle);
+      opacity: 0.82;
+    }
+
+    .ecosystem-line strong {
+      color: var(--accent-bright);
+      font-weight: 600;
+    }
+
+    .ecosystem-line a {
+      color: inherit;
+      transition: color 0.16s ease;
+    }
+
+    .ecosystem-line a:hover {
+      color: var(--text);
+    }
+
+    .specs-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 22px;
+      max-width: 820px;
+    }
+
+    .spec-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 0.79rem;
+      font-weight: 500;
+      color: var(--muted);
+      white-space: nowrap;
+      transition: border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .spec-pill strong {
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.76rem;
+    }
+
+    .spec-pill.accent-pill strong {
+      color: var(--accent-bright);
+    }
+
+    .spec-pill:hover {
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+
+    .scroll-hint {
+      margin-top: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      color: var(--subtle);
+      font-family: inherit;
+      font-size: 0.76rem;
+      font-weight: 500;
+      cursor: pointer;
+      min-block-size: 28px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      transition: color 0.18s ease;
+    }
+
+    .scroll-hint:hover {
+      color: var(--text);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .scroll-hint svg {
+        animation: float-down 2s ease-in-out infinite;
+      }
+    }
+
+    @keyframes float-down {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(4px); }
+    }
+
+    /* SCENE 1: INTERACTIVE LIVE AUDIO DENOISER SIMULATOR */
+    .demo-card {
+      width: 100%;
+      max-width: 820px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 20px;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+    }
+
+    .demo-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .preset-pills {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .preset-btn {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      min-block-size: 28px;
+      padding: 4px 10px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: color 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
+    }
+
+    .preset-btn:hover {
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+
+    .preset-btn[aria-pressed="true"] {
+      background: var(--accent-soft);
+      border-color: rgba(6, 182, 212, 0.55);
+      color: var(--accent-bright);
+    }
+
+    .demo-controls-right {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .key-trigger-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 9px;
+      min-block-size: 28px;
+      border-radius: 7px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: color 0.16s ease, border-color 0.16s ease, background-color 0.16s ease;
+    }
+
+    .key-trigger-btn:hover {
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+
+    .key-trigger-btn.is-bypass {
+      background: var(--amber-soft);
+      border-color: rgba(245, 158, 11, 0.55);
+      color: #FCD34D;
+    }
+
+    .key-trigger-btn.is-active {
+      background: var(--accent-soft);
+      border-color: rgba(6, 182, 212, 0.45);
+      color: var(--accent-bright);
+    }
+
+    .key-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      font-size: 0.69rem;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: #272731;
+      border: 1px solid var(--border-strong);
+      color: var(--text);
+    }
+
+    .demo-pause-btn {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      min-block-size: 28px;
+      padding: 4px 10px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: color 0.16s ease, border-color 0.16s ease;
+    }
+
+    .demo-pause-btn:hover {
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+
+    /* Live Audio Spectrum Viewport */
+    .audio-viewport {
+      position: relative;
+      padding: 12px 14px 13px;
+      border-radius: 12px;
+      background:
+        radial-gradient(ellipse 90% 80% at 50% 100%, rgba(6, 182, 212, 0.08), transparent 68%),
+        linear-gradient(180deg, #0D0F14 0%, #090A0E 100%);
+      border: 1px solid var(--border-strong);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow: hidden;
+      transition: border-color 0.25s ease;
+    }
+
+    .audio-viewport.is-bypass {
+      background:
+        radial-gradient(ellipse 90% 80% at 50% 100%, rgba(245, 158, 11, 0.11), transparent 68%),
+        linear-gradient(180deg, #120F0C 0%, #0A090C 100%);
+      border-color: rgba(245, 158, 11, 0.45);
+    }
+
+    .viewport-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .fft-legend {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.67rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .legend-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .legend-dot.clean {
+      background: var(--accent);
+      box-shadow: 0 0 8px rgba(6, 182, 212, 0.65);
+    }
+
+    .legend-dot.raw {
+      background: var(--amber);
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.55);
+    }
+
+    .telemetry-strip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.67rem;
+      color: var(--muted);
+    }
+
+    .telemetry-chip {
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .telemetry-chip.accent {
+      color: #34D399;
+      border-color: rgba(16, 185, 129, 0.35);
+      background: rgba(16, 185, 129, 0.1);
+    }
+
+    .telemetry-chip.bypass {
+      color: #FCD34D;
+      border-color: rgba(245, 158, 11, 0.45);
+      background: rgba(245, 158, 11, 0.12);
+    }
+
+    /* 32-Bar Dual-Layer FFT Spectrum */
+    .fft-stage {
+      position: relative;
+      height: 136px;
+      padding: 8px 6px 0;
+      border-radius: 8px;
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.045) 0 1px,
+          transparent 1px 34px
+        ),
+        rgba(6, 7, 10, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      display: grid;
+      grid-template-columns: repeat(32, minmax(0, 1fr));
+      gap: 4px;
+      align-items: end;
+      overflow: hidden;
+    }
+
+    .fft-col {
+      position: relative;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+    }
+
+    .fft-bar-raw,
+    .fft-bar-clean {
+      position: absolute;
+      inset: 0;
+      border-radius: 3px 3px 1px 1px;
+      transform-origin: bottom center;
+      will-change: transform;
+      transition: transform 0.11s linear, opacity 0.2s ease, background 0.22s ease;
+    }
+
+    .fft-bar-raw {
+      background: linear-gradient(180deg, rgba(251, 191, 36, 0.56) 0%, rgba(245, 158, 11, 0.24) 65%, rgba(245, 158, 11, 0.08) 100%);
+      border-top: 2px solid rgba(251, 191, 36, 0.85);
+      transform: scaleY(0.28);
+      z-index: 1;
+    }
+
+    .fft-bar-clean {
+      background: linear-gradient(180deg, #67E8F9 0%, #06B6D4 58%, #0E7490 100%);
+      border-top: 2px solid #CFFAFE;
+      transform: scaleY(0.18);
+      z-index: 2;
+      box-shadow: 0 0 12px rgba(6, 182, 212, 0.16);
+    }
+
+    .audio-viewport.is-bypass .fft-bar-raw {
+      background: linear-gradient(180deg, rgba(251, 191, 36, 0.85) 0%, rgba(245, 158, 11, 0.42) 65%, rgba(217, 119, 6, 0.16) 100%);
+      border-top-color: #FDE68A;
+    }
+
+    .audio-viewport.is-bypass .fft-bar-clean {
+      opacity: 0.22;
+      box-shadow: none;
+    }
+
+    .fft-axis {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.63rem;
+      color: var(--subtle);
+      user-select: none;
+    }
+
+    /* Interactive DSP Signal Chain */
+    .dsp-chain-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      flex-wrap: wrap;
+      padding-top: 2px;
+    }
+
+    .dsp-arrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--subtle);
+      user-select: none;
+    }
+
+    .dsp-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 9px;
+      min-block-size: 26px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      color: var(--subtle);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.16s ease, border-color 0.16s ease, background-color 0.16s ease;
+    }
+
+    .dsp-pill:hover {
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+
+    .dsp-pill[aria-pressed="true"] {
+      background: rgba(6, 182, 212, 0.12);
+      border-color: rgba(6, 182, 212, 0.5);
+      color: var(--accent-bright);
+    }
+
+    .dsp-pill[data-stage="gtcrn"][aria-pressed="true"] {
+      background: rgba(16, 185, 129, 0.13);
+      border-color: rgba(16, 185, 129, 0.55);
+      color: #6EE7B7;
+    }
+
+    .audio-viewport.is-bypass .dsp-pill[aria-pressed="true"] {
+      background: rgba(245, 158, 11, 0.07);
+      border-color: rgba(245, 158, 11, 0.25);
+      color: var(--subtle);
+    }
+
+    .dsp-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0.85;
+    }
+
+    /* Noise Reduction Live Meter */
+    .nr-meter-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+    }
+
+    .nr-meter-label {
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .nr-meter-track {
+      position: relative;
+      height: 7px;
+      border-radius: 999px;
+      background: #1C1C24;
+      overflow: hidden;
+    }
+
+    .nr-meter-fill {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #06B6D4 0%, #10B981 100%);
+      transform-origin: left center;
+      transform: scaleX(0.82);
+      transition: transform 0.25s var(--ease-out), background 0.2s ease;
+    }
+
+    .audio-viewport.is-bypass .nr-meter-fill {
+      background: var(--amber);
+      transform: scaleX(0.03);
+    }
+
+    .nr-meter-val {
+      color: #34D399;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .audio-viewport.is-bypass .nr-meter-val {
+      color: #FCD34D;
+    }
+
+    /* Demo Footer */
+    .demo-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .style-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.74rem;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+
+    .tone-swatches {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .tone-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-block-size: 26px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.73rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.16s ease, border-color 0.16s ease, background-color 0.16s ease;
+    }
+
+    .tone-btn:hover {
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+
+    .tone-btn[aria-pressed="true"] {
+      background: rgba(6, 182, 212, 0.14);
+      border-color: rgba(6, 182, 212, 0.55);
+      color: var(--text);
+    }
+
+    .tone-swatch-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--swatch, var(--accent));
+      flex-shrink: 0;
+    }
+
+    .mode-switch {
+      display: inline-flex;
+      padding: 2px;
+      border-radius: 7px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      gap: 2px;
+    }
+
+    .mode-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.74rem;
+      font-weight: 600;
+      min-block-size: 26px;
+      padding: 3px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .mode-btn[data-engine="ai"][aria-pressed="true"] {
+      background: rgba(6, 182, 212, 0.18);
+      border-color: rgba(6, 182, 212, 0.55);
+      color: var(--accent-bright);
+    }
+
+    .mode-btn[data-engine="bypass"][aria-pressed="true"] {
+      background: var(--amber-soft);
+      border-color: rgba(245, 158, 11, 0.55);
+      color: #FCD34D;
+    }
+
+    /* SCENE 2: INTERACTIVE STUDIO SHOWCASE */
+    .studio-showcase {
+      width: 100%;
+      max-width: 1030px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(275px, 1fr);
+      gap: 16px;
+      align-items: stretch;
+      margin-bottom: 14px;
+      text-align: left;
+    }
+
+    .studio-perspective {
+      width: 100%;
+      perspective: 1200px;
+      display: flex;
+    }
+
+    .studio-frame {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      border-radius: 14px;
+      overflow: hidden;
+      background: linear-gradient(150deg, #1B1B24 0%, #111116 100%);
+      border: 1px solid var(--border-strong);
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.58);
+      transform-style: preserve-3d;
+      transition: transform 0.25s var(--ease-out), border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .studio-frame:hover {
+      border-color: rgba(6, 182, 212, 0.48);
+      box-shadow: 0 28px 72px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(6, 182, 212, 0.14);
+    }
+
+    .window-chrome {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 13px;
+      background: #15151C;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .window-chrome-left {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .window-dots {
+      display: inline-flex;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    .window-dots span {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #2C2C36;
+      border: 1px solid #3B3B48;
+    }
+
+    .window-dots span:nth-child(1) { background: rgba(239, 68, 68, 0.55); border-color: transparent; }
+    .window-dots span:nth-child(2) { background: rgba(245, 158, 11, 0.55); border-color: transparent; }
+    .window-dots span:nth-child(3) { background: rgba(16, 185, 129, 0.55); border-color: transparent; }
+
+    .window-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .window-chrome-right {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .window-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.66rem;
+      color: #34D399;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.28);
+    }
+
+    .window-zoom-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.71rem;
+      font-weight: 600;
+      min-block-size: 24px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: color 0.16s ease, border-color 0.16s ease, background-color 0.16s ease;
+    }
+
+    .window-zoom-btn:hover {
+      color: var(--text);
+      border-color: var(--border-strong);
+      background: #25252F;
+    }
+
+    .studio-media-wrap {
+      position: relative;
+      flex: 1;
+      background: #0B0B0E;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Exact-fit wrapper so hotspot percentages align 1:1 with the 960x640 screenshot at every viewport */
+    .studio-canvas {
+      position: relative;
+      display: inline-grid;
+      max-width: 100%;
+    }
+
+    .studio-canvas img {
+      display: block;
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: 36dvh;
+      border-radius: 7px;
+      background: #0C0C0E;
+      cursor: zoom-in;
+      transition: opacity 0.22s ease, transform 0.28s var(--ease-out);
+    }
+
+    .studio-canvas img.switching {
+      opacity: 0.2;
+      transform: scale(0.985);
+    }
+
+    /* Interactive Hotspot Pins */
+    .hotspot-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .hotspot-pin {
+      position: absolute;
+      left: var(--x, 50%);
+      top: var(--y, 50%);
+      transform: translate(-50%, -50%);
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      border: 1.5px solid #CFFAFE;
+      background: rgba(6, 182, 212, 0.94);
+      color: #04131A;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 800;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      pointer-events: auto;
+      box-shadow: 0 4px 16px rgba(6, 182, 212, 0.48);
+      transition: transform 0.2s var(--ease-spring), background-color 0.18s ease, box-shadow 0.2s ease;
+    }
+
+    .hotspot-pin:hover,
+    .hotspot-pin[aria-pressed="true"] {
+      transform: translate(-50%, -50%) scale(1.14);
+      background: #22D3EE;
+      box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.3), 0 6px 20px rgba(6, 182, 212, 0.58);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .hotspot-pin::after {
+        content: "";
+        position: absolute;
+        inset: -5px;
+        border-radius: 999px;
+        border: 1.5px solid rgba(6, 182, 212, 0.65);
+        pointer-events: none;
+        animation: pin-ripple 2.4s ease-out infinite;
+      }
+    }
+
+    @keyframes pin-ripple {
+      0% { transform: scale(0.85); opacity: 0.8; }
+      100% { transform: scale(1.65); opacity: 0; }
+    }
+
+    .hotspot-callout {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 13px;
+      background: #14141B;
+      border-top: 1px solid var(--border);
+      font-size: 0.76rem;
+      line-height: 1.38;
+      color: var(--muted);
+    }
+
+    .hotspot-callout-main {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .hotspot-callout-badge {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(6, 182, 212, 0.55);
+      color: var(--accent-bright);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      font-weight: 700;
+      display: grid;
+      place-items: center;
+    }
+
+    .hotspot-callout strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* Right Side Interactive Inspector Tabs */
+    .studio-inspector {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .inspector-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+      padding: 11px 14px 11px 16px;
+      border-radius: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      text-align: left;
+      font-family: inherit;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background-color 0.18s ease, border-color 0.2s ease;
+    }
+
+    /* Non-color border indicator on pseudo-element so forced-colors preserves active tab shape */
+    .inspector-card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 11px;
+      bottom: 11px;
+      border-inline-start: 3px solid transparent;
+      border-radius: 0 3px 3px 0;
+      transition: border-color 0.2s ease;
+    }
+
+    .inspector-card:hover {
+      background: #17171F;
+      border-color: var(--border-strong);
+      color: var(--text);
+    }
+
+    .inspector-card[aria-selected="true"] {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.09) 0%, #171720 62%);
+      border-color: rgba(6, 182, 212, 0.48);
+      color: var(--text);
+    }
+
+    .inspector-card[aria-selected="true"]::before {
+      border-inline-start-color: var(--accent);
+    }
+
+    .inspector-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .inspector-card-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .inspector-step-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 5px;
+      background: #23232D;
+      border: 1px solid var(--border-strong);
+      color: var(--muted);
+    }
+
+    .inspector-card[aria-selected="true"] .inspector-step-num {
+      background: var(--accent-soft);
+      border-color: rgba(6, 182, 212, 0.52);
+      color: var(--accent-bright);
+    }
+
+    .inspector-card-desc {
+      font-size: 0.76rem;
+      line-height: 1.44;
+      color: var(--muted);
+    }
+
+    .inspector-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 1px;
+    }
+
+    .inspector-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.66rem;
+      font-weight: 500;
+      padding: 2px 7px;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .inspector-card[aria-selected="true"] .inspector-chip {
+      color: #E4E4E7;
+      border-color: #3A3A47;
+    }
+
+    /* Native Fullscreen Lightbox Dialog (Top-Layer Animated + Scroll Containment) */
+    dialog:modal {
+      overscroll-behavior: contain;
+    }
+
+    dialog::backdrop {
+      overflow: hidden;
+      overscroll-behavior: contain;
+    }
+
+    .studio-lightbox {
+      margin: auto;
+      width: min(94vw, 1080px);
+      max-height: 92dvh;
+      padding: 0;
+      border-radius: 16px;
+      border: 1px solid var(--border-strong);
+      background: #121218;
+      color: var(--text);
+      box-shadow: 0 32px 96px rgba(0, 0, 0, 0.82);
+      overflow: hidden;
+      opacity: 0;
+      transition-property: opacity, transform, display, overlay;
+      transition-duration: 0.26s;
+      transition-timing-function: var(--ease-out);
+      transition-behavior: allow-discrete;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .studio-lightbox {
+        transform: scale(0.95);
+      }
+    }
+
+    .studio-lightbox[open]:where(:not([data-closing])) {
+      opacity: 1;
+    }
+
+    @starting-style {
+      .studio-lightbox[open]:where(:not([data-closing])) {
+        opacity: 0;
+      }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .studio-lightbox[open]:where(:not([data-closing])) {
+        transform: scale(1);
+      }
+      @starting-style {
+        .studio-lightbox[open]:where(:not([data-closing])) {
+          transform: scale(0.95);
+        }
+      }
+    }
+
+    .studio-lightbox::backdrop {
+      background-color: rgba(4, 4, 7, 0);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition-property: background-color, display, overlay;
+      transition-duration: 0.26s;
+      transition-timing-function: ease-out;
+      transition-behavior: allow-discrete;
+    }
+
+    .studio-lightbox[open]:where(:not([data-closing]))::backdrop {
+      background-color: rgba(4, 4, 7, 0.82);
+    }
+
+    @starting-style {
+      .studio-lightbox[open]:where(:not([data-closing]))::backdrop {
+        background-color: rgba(4, 4, 7, 0);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .studio-lightbox,
+      .studio-lightbox::backdrop {
+        transition-duration: 0.1s;
+      }
+    }
+
+    .lightbox-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      background: #16161E;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .lightbox-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0;
+    }
+
+    .lightbox-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .lightbox-btn {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border-strong);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      min-block-size: 30px;
+      padding: 5px 11px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .lightbox-btn:hover {
+      background: #292935;
+      border-color: var(--muted);
+    }
+
+    .lightbox-body {
+      padding: 14px;
+      background: #0A0A0D;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox-body img {
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: 76dvh;
+      object-fit: contain;
+      border-radius: 8px;
+      display: block;
+    }
+
+    /* Flat Bottom Navigation Dock */
+    .bottom-dock {
+      position: fixed;
+      bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 4px;
+      border-radius: 11px;
+      background: rgba(19, 19, 24, 0.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    }
+
+    .dock-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      min-block-size: 32px;
+      padding: 7px 16px;
+      border-radius: 7px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+    }
+
+    .dock-btn:hover {
+      color: var(--text);
+    }
+
+    .dock-btn.active {
+      background: #25252E;
+      border-color: var(--border-strong);
+      color: var(--text);
+    }
+
+    @media (forced-colors: active) {
+      .btn-download,
+      .btn-download-secondary,
+      .btn-pill,
+      .lang-btn[aria-pressed="true"],
+      .preset-btn[aria-pressed="true"],
+      .dsp-pill[aria-pressed="true"],
+      .tone-btn[aria-pressed="true"],
+      .mode-btn[aria-pressed="true"],
+      .hotspot-pin[aria-pressed="true"],
+      .dock-btn.active,
+      .inspector-card[aria-selected="true"] {
+        border: 2px solid ButtonText;
+      }
+      .inspector-card[aria-selected="true"]::before {
+        border-inline-start-color: Highlight;
+      }
+      .studio-frame,
+      .demo-card,
+      .spec-pill,
+      .lang-switch,
+      .bottom-dock {
+        border: 1px solid CanvasText;
+      }
+      .headline .accent-text {
+        -webkit-text-fill-color: CanvasText;
+      }
+    }
+
+    @media (max-height: 740px) {
+      .studio-canvas img {
+        max-height: 31dvh;
+      }
+      .fft-stage {
+        height: 112px;
+      }
+      .inspector-card {
+        padding: 9px 12px 9px 14px;
+        gap: 4px;
+      }
+    }
+
+    @media (max-width: 860px) {
+      #scene-2 {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        justify-content: flex-start;
+        padding-top: 72px;
+        padding-bottom: 84px;
+      }
+
+      .studio-showcase {
+        grid-template-columns: 1fr;
+        max-width: 560px;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .studio-inspector {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+        overflow: visible;
+      }
+
+      .inspector-card {
+        min-width: 0;
+        padding: 8px 6px 10px;
+        align-items: center;
+        text-align: center;
+        gap: 4px;
+        border-radius: 10px;
+      }
+
+      .inspector-card::before {
+        left: 14px;
+        right: 14px;
+        top: auto;
+        bottom: 0;
+        border-inline-start: none;
+        border-block-end: 3px solid transparent;
+        border-radius: 3px 3px 0 0;
+      }
+
+      .inspector-card[aria-selected="true"]::before {
+        border-inline-start-color: transparent;
+        border-block-end-color: var(--accent);
+      }
+
+      .inspector-card-head {
+        justify-content: center;
+        width: 100%;
+      }
+
+      .inspector-card-title {
+        flex-direction: column;
+        gap: 4px;
+        font-size: 0.72rem;
+        line-height: 1.2;
+      }
+
+      .inspector-card-desc,
+      .inspector-chips,
+      .window-status {
+        display: none;
+      }
+
+      .window-chrome {
+        padding: 7px 10px;
+        gap: 6px;
+      }
+
+      .window-title {
+        font-size: 0.67rem;
+      }
+
+      .studio-media-wrap {
+        padding: 6px;
+      }
+
+      .studio-canvas img {
+        max-height: 30dvh;
+      }
+
+      .hotspot-callout {
+        padding: 8px 10px;
+        font-size: 0.72rem;
+        line-height: 1.35;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .topbar {
+        height: 56px;
+        padding: 0 14px;
+      }
+
+      .top-actions {
+        gap: 8px;
+      }
+
+      .hide-mobile,
+      .scene-rail {
+        display: none !important;
+      }
+
+      .scene {
+        padding: 64px 14px 78px;
+      }
+
+      #scene-1,
+      #scene-2 {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        justify-content: flex-start;
+        padding: 66px 14px 82px;
+      }
+
+      #scene-2 .eyebrow {
+        margin-bottom: 5px;
+      }
+
+      #scene-2 .headline--sm {
+        font-size: clamp(1.18rem, 5.2vw, 1.52rem);
+        margin-bottom: 10px;
+      }
+
+      .logo-showcase img {
+        width: 62px;
+        height: 62px;
+      }
+
+      .cta-group {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .btn-download,
+      .btn-download-secondary {
+        width: 100%;
+        max-width: 280px;
+        padding: 11px 18px;
+        font-size: 0.87rem;
+      }
+
+      #scene-2 .cta-group {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+        max-width: 440px;
+      }
+
+      #scene-2 .btn-download,
+      #scene-2 .btn-download-secondary {
+        max-width: none;
+        padding: 9px 6px;
+        font-size: 0.74rem;
+        gap: 5px;
+      }
+
+      .window-dots {
+        display: none;
+      }
+
+      .hotspot-pin {
+        width: 24px;
+        height: 24px;
+        font-size: 0.68rem;
+      }
+
+      .studio-canvas img {
+        max-height: 26dvh;
+      }
+
+      .studio-lightbox {
+        width: 96vw;
+        border-radius: 12px;
+      }
+
+      .lightbox-bar {
+        flex-wrap: wrap;
+        padding: 10px 12px;
+        gap: 8px;
+      }
+
+      .lightbox-title {
+        font-size: 0.8rem;
+      }
+
+      .lightbox-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .lightbox-btn {
+        flex: 1;
+        text-align: center;
+        font-size: 0.74rem;
+        padding: 6px 8px;
+      }
+
+      .lightbox-body {
+        padding: 8px;
+      }
+
+      .demo-card {
+        padding: 13px 12px;
+      }
+
+      .fft-stage {
+        height: 108px;
+        gap: 2px;
+      }
+
+      .dsp-arrow {
+        display: none;
+      }
+
+      .telemetry-strip {
+        display: none;
+      }
+
+      .nr-meter-row {
+        grid-template-columns: 1fr auto;
+      }
+
+      .nr-meter-label {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body data-scene="0">
+
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="cursor-glow" id="cursor-glow" aria-hidden="true"></div>
+
+  <!-- Minimal Flat Topbar -->
+  <header class="topbar">
+    <button type="button" class="brand" id="brand-home-btn" aria-label="ClearMic Ana Sayfa">
+      <img src="/assets/app_icon.png?v=1.0.0" alt="" width="30" height="30" />
+      <span>ClearMic</span>
+    </button>
+
+    <div class="top-actions">
+      <a href="https://github.com/Andacbasaran/ClearMic" target="_blank" rel="noopener" class="top-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        <span class="hide-mobile">GitHub</span>
+      </a>
+      <a href="https://andacbasaran.com" target="_blank" rel="noopener" class="top-link hide-mobile">andacbasaran.com</a>
+
+      <div class="lang-switch" role="group" id="lang-switch" aria-label="Dil Seçimi">
+        <button type="button" class="lang-btn" data-lang="tr" lang="tr" aria-pressed="true">TR</button>
+        <button type="button" class="lang-btn" data-lang="en" lang="en" aria-pressed="false">EN</button>
+      </div>
+
+      <a href="/downloads/ClearMic.exe" id="topbar-download-btn" class="btn-pill" download="ClearMic.exe" data-i18n="topDownload">İndir</a>
+    </div>
+  </header>
+
+  <!-- Right-Edge Scene Progress Rail -->
+  <div class="scene-rail" aria-hidden="true">
+    <button type="button" class="rail-dot active" data-rail-target="0" tabindex="-1"></button>
+    <button type="button" class="rail-dot" data-rail-target="1" tabindex="-1"></button>
+    <button type="button" class="rail-dot" data-rail-target="2" tabindex="-1"></button>
+  </div>
+
+  <main class="stage" id="stage">
+
+    <!-- SCENE 0: HERO -->
+    <section class="scene active" id="scene-0">
+      <div class="logo-showcase" data-reveal="1">
+        <img src="/assets/app_icon.png?v=1.0.0" alt="ClearMic Logo" width="76" height="76" fetchpriority="high" />
+      </div>
+
+      <div class="live-badge" data-reveal="1">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span data-i18n="heroBadge">v1.0.0 · Windows, macOS &amp; Linux</span>
+      </div>
+
+      <h1 class="headline" data-reveal="2">
+        <span data-i18n="heroTitleLine1">Sadece Sesiniz.</span><br />
+        <span class="accent-text" data-i18n="heroTitleLine2">Gürültü Sıfır.</span>
+      </h1>
+
+      <p class="subhead" data-reveal="3" data-i18n="heroSubhead">
+        Mekanik klavye, PC fanı ve 60 Hz dip gürültüsünü kendi işlemcinizde ~0.84 ms gecikmeyle yok eder — Discord, OBS, Zoom ve oyunlar için 0 MB VRAM ile stüdyo kalitesinde ses.
+      </p>
+
+      <div class="cta-group" data-reveal="4">
+        <a href="/downloads/ClearMic.exe" class="btn-download" download="ClearMic.exe">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+          <span data-i18n="heroWinBtn">Windows İçin İndir</span>
+        </a>
+        <a href="/downloads/ClearMic-macOS.dmg" class="btn-download-secondary" download="ClearMic-macOS.dmg">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.33c.64-.78 1.08-1.86.96-2.94-.93.04-2.06.62-2.72 1.4-.58.68-1.1 1.79-.96 2.84 1.04.08 2.09-.52 2.72-1.3z"/></svg>
+          <span data-i18n="heroMacBtn">macOS (Apple Silicon)</span>
+        </a>
+      </div>
+
+      <div class="caption-small" data-reveal="4">
+        <span data-i18n="heroCaptionPrefix">v1.0.0 · Windows x64, macOS M1–M4 &amp;</span>
+        <a href="/downloads/ClearMic-Linux.tar.gz" download="ClearMic-Linux.tar.gz" data-i18n="heroLinuxLink">Linux (.tar.gz)</a>
+        <span data-i18n="heroCaptionMid">· %100 Ücretsiz ve</span>
+        <a href="https://github.com/Andacbasaran/ClearMic" target="_blank" rel="noopener" data-i18n="heroCaptionLink">Açık Kaynak (MIT)</a>
+      </div>
+
+      <div class="specs-row" data-reveal="5">
+        <div class="spec-pill accent-pill"><strong id="latency-counter">~0.84 ms</strong> <span data-i18n="specLatency">CPU Gecikmesi</span></div>
+        <div class="spec-pill"><strong>0 MB</strong> <span data-i18n="specVram">VRAM · %100 Çevrimdışı</span></div>
+        <div class="spec-pill accent-pill"><strong>-47.0 dB</strong> <span data-i18n="specDrop">AI Gürültü Düşüşü</span></div>
+        <a href="https://github.com/Andacbasaran/ClearMic" target="_blank" rel="noopener" class="spec-pill">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          <span data-i18n="specMit">Open Source MIT</span>
+        </a>
+      </div>
+
+      <button type="button" class="scroll-hint" id="scroll-next-btn" data-reveal="5">
+        <span data-i18n="heroExplore">Canlı ses simülatörünü dene</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+    </section>
+
+    <!-- SCENE 1: INTERACTIVE LIVE AUDIO DENOISER SIMULATOR -->
+    <section class="scene" id="scene-1" inert>
+      <div class="eyebrow" data-reveal="1" data-i18n="simEyebrow">İnteraktif Canlı Ses Simülatörü</div>
+      <h2 class="headline headline--md" data-reveal="2">
+        <span data-i18n="simTitle1">Gürültü yok.</span>
+        <span class="accent-text" data-i18n="simTitle2">Yayın kalitesinde netlik.</span>
+      </h2>
+
+      <div class="demo-card" data-reveal="3">
+        <div class="demo-toolbar">
+          <div class="preset-pills" role="group" id="noise-presets" aria-label="Gürültü Senaryoları">
+            <button type="button" class="preset-btn" data-preset="0" aria-pressed="true" data-i18n="noiseKeyboard">Mekanik Klavye</button>
+            <button type="button" class="preset-btn" data-preset="1" aria-pressed="false" data-i18n="noiseFan">PC Fanı</button>
+            <button type="button" class="preset-btn" data-preset="2" aria-pressed="false" data-i18n="noiseHum">60 Hz Uğultu &amp; Hiss</button>
+          </div>
+
+          <div class="demo-controls-right">
+            <button type="button" class="key-trigger-btn is-active" id="btn-sim-bypass">
+              <span class="key-badge">B</span>
+              <span id="bypass-key-label" data-i18n="bypassStateOn">ClearMic AI: Açık</span>
+            </button>
+            <button type="button" class="demo-pause-btn" id="btn-demo-pause">Duraklat</button>
+          </div>
+        </div>
+
+        <div class="audio-viewport" id="audio-viewport">
+          <div class="viewport-head">
+            <div class="fft-legend" aria-hidden="true">
+              <span class="legend-item"><span class="legend-dot clean"></span><span data-i18n="legendClean">TEMİZ SES</span></span>
+              <span class="legend-item"><span class="legend-dot raw"></span><span data-i18n="legendRaw">HAM GİRİŞ</span></span>
+            </div>
+            <div class="telemetry-strip" aria-hidden="true">
+              <span class="telemetry-chip">GTCRN ONNX + DSP</span>
+              <span class="telemetry-chip" id="tel-latency">0.84 ms P50</span>
+              <span class="telemetry-chip accent" id="tel-nr">-49.6 dB</span>
+            </div>
+          </div>
+
+          <div class="fft-stage" id="fft-stage" aria-hidden="true"></div>
+
+          <div class="fft-axis" aria-hidden="true">
+            <span>60 Hz</span>
+            <span>250 Hz</span>
+            <span>1 kHz</span>
+            <span>4 kHz</span>
+            <span>12 kHz</span>
+          </div>
+
+          <div class="dsp-chain-row" role="group" id="dsp-chain" aria-label="DSP Sinyal Zinciri">
+            <button type="button" class="dsp-pill" data-stage="hpf" aria-pressed="true"><span class="dsp-dot" aria-hidden="true"></span>HPF</button>
+            <span class="dsp-arrow" aria-hidden="true">→</span>
+            <button type="button" class="dsp-pill" data-stage="gtcrn" aria-pressed="true"><span class="dsp-dot" aria-hidden="true"></span>GTCRN AI</button>
+            <span class="dsp-arrow" aria-hidden="true">→</span>
+            <button type="button" class="dsp-pill" data-stage="gate" aria-pressed="true"><span class="dsp-dot" aria-hidden="true"></span>Gate</button>
+            <span class="dsp-arrow" aria-hidden="true">→</span>
+            <button type="button" class="dsp-pill" data-stage="deess" aria-pressed="true"><span class="dsp-dot" aria-hidden="true"></span>De-Ess</button>
+            <span class="dsp-arrow" aria-hidden="true">→</span>
+            <button type="button" class="dsp-pill" data-stage="eq" aria-pressed="true"><span class="dsp-dot" aria-hidden="true"></span>3-Band EQ</button>
+            <span class="dsp-arrow" aria-hidden="true">→</span>
+            <button type="button" class="dsp-pill" data-stage="comp" aria-pressed="true"><span class="dsp-dot" aria-hidden="true"></span>Comp</button>
+          </div>
+
+          <div class="nr-meter-row">
+            <span class="nr-meter-label" data-i18n="nrMeterLabel">AI Gürültü Bastırma</span>
+            <div class="nr-meter-track" aria-hidden="true">
+              <div class="nr-meter-fill" id="nr-meter-fill"></div>
+            </div>
+            <span class="nr-meter-val" id="nr-meter-val">-49.6 dB · +28.7 dB SNR</span>
+          </div>
+        </div>
+
+        <div class="demo-footer">
+          <div class="style-group">
+            <span data-i18n="voiceToneLabel">Ses Tonu:</span>
+            <div class="tone-swatches" role="group" id="tone-presets" aria-label="Ses Tonu Profili">
+              <button type="button" class="tone-btn" data-tone="gaming" aria-pressed="true"><span class="tone-swatch-dot" style="--swatch: #06B6D4;" aria-hidden="true"></span><span data-i18n="toneGaming">Gaming</span></button>
+              <button type="button" class="tone-btn" data-tone="broadcast" aria-pressed="false"><span class="tone-swatch-dot" style="--swatch: #10B981;" aria-hidden="true"></span><span data-i18n="toneBroadcast">Broadcast</span></button>
+              <button type="button" class="tone-btn" data-tone="meeting" aria-pressed="false"><span class="tone-swatch-dot" style="--swatch: #38BDF8;" aria-hidden="true"></span><span data-i18n="toneMeeting">Meeting</span></button>
+              <button type="button" class="tone-btn" data-tone="natural" aria-pressed="false"><span class="tone-swatch-dot" style="--swatch: #A78BFA;" aria-hidden="true"></span><span data-i18n="toneNatural">Natural</span></button>
+            </div>
+          </div>
+
+          <div class="style-group">
+            <div class="mode-switch" role="group" id="engine-switch" aria-label="İşleme Modu">
+              <button type="button" class="mode-btn" data-engine="ai" aria-pressed="true">GTCRN AI</button>
+              <button type="button" class="mode-btn" data-engine="bypass" aria-pressed="false">Bypass</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCENE 2: INTERACTIVE STUDIO 2.0 UI SHOWCASE & DOWNLOADS -->
+    <section class="scene" id="scene-2" inert>
+      <div class="eyebrow" data-reveal="1" data-i18n="studioEyebrow">ClearMic Studio v1.0</div>
+      <h2 class="headline headline--sm" data-reveal="2">
+        <span data-i18n="studioTitle1">Sade. Hızlı.</span>
+        <span class="accent-text" data-i18n="studioTitle2">Tamamen sizin kontrolünüzde.</span>
+      </h2>
+
+      <div class="studio-showcase" data-reveal="3">
+        <!-- Left: Interactive App Window with Exact-Fit Hotspots & Fullscreen Zoom -->
+        <div class="studio-perspective">
+          <div class="studio-frame" id="studio-tilt-card">
+            <div class="window-chrome">
+              <div class="window-chrome-left">
+                <div class="window-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+                <span class="window-title" id="window-title-text">ClearMic Studio · 1. Canlı Stüdyo</span>
+              </div>
+              <div class="window-chrome-right">
+                <span class="window-status">● 0 MB VRAM · GTCRN ONNX</span>
+                <button type="button" class="window-zoom-btn" id="btn-open-lightbox">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                  <span data-i18n="zoomBtn">Tam Ekran</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="studio-media-wrap">
+              <div class="studio-canvas">
+                <img id="studio-preview-img" src="/assets/ui_preview.png?v=1.0.0" alt="ClearMic Studio Uygulama Arayüzü" width="960" height="640" loading="lazy" />
+                <div class="hotspot-layer" id="hotspot-layer">
+                  <button type="button" class="hotspot-pin" data-pin="0" style="--x: 61%; --y: 38%;" aria-pressed="true" aria-label="Feature 1">1</button>
+                  <button type="button" class="hotspot-pin" data-pin="1" style="--x: 48%; --y: 59%;" aria-pressed="false" aria-label="Feature 2">2</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="hotspot-callout" id="hotspot-callout">
+              <div class="hotspot-callout-main">
+                <span class="hotspot-callout-badge" id="callout-num">1</span>
+                <span><strong id="callout-title">Canlı Çift Katmanlı FFT Spektrum:</strong> <span id="callout-desc">Turuncu ham gürültü katmanı ile elektrik camgöbeği temiz sesi gerçek zamanlı izle — ortalama -47.0 dB gürültü düşüşü.</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Interactive Studio Tab Inspector -->
+        <div class="studio-inspector" role="tablist" id="preview-tablist" aria-label="Arayüz Sekmeleri">
+          <button type="button" role="tab" aria-selected="true" tabindex="0" class="inspector-card" data-tab="0">
+            <div class="inspector-card-head">
+              <span class="inspector-card-title">
+                <span class="inspector-step-num">01</span>
+                <span data-i18n="tabStudio">Canlı Stüdyo</span>
+              </span>
+            </div>
+            <p class="inspector-card-desc" data-i18n="tabStudioDesc">32-bant çift katmanlı FFT spektrum, tek tıkla A/B kıyaslama, tıklanabilir DSP sinyal zinciri ve hazır stüdyo profilleri.</p>
+            <div class="inspector-chips">
+              <span class="inspector-chip">32-Band FFT</span>
+              <span class="inspector-chip">GTCRN ONNX</span>
+              <span class="inspector-chip">Ctrl+Shift+B</span>
+            </div>
+          </button>
+
+          <button type="button" role="tab" aria-selected="false" tabindex="-1" class="inspector-card" data-tab="1">
+            <div class="inspector-card-head">
+              <span class="inspector-card-title">
+                <span class="inspector-step-num">02</span>
+                <span data-i18n="tabSculptor">Ses Şekillendirici &amp; A/B Lab</span>
+              </span>
+            </div>
+            <p class="inspector-card-desc" data-i18n="tabSculptorDesc">Canlı HPF + 3-Bant EQ grafiği, De-Esser, Kompresör, AGC, 6 saniyelik canlı A/B kayıt stüdyosu ve toplu .WAV temizleyici.</p>
+            <div class="inspector-chips">
+              <span class="inspector-chip">3-Band EQ</span>
+              <span class="inspector-chip">De-Ess &amp; Comp</span>
+              <span class="inspector-chip">6s A/B &amp; .WAV</span>
+            </div>
+          </button>
+
+          <button type="button" role="tab" aria-selected="false" tabindex="-1" class="inspector-card" data-tab="2">
+            <div class="inspector-card-head">
+              <span class="inspector-card-title">
+                <span class="inspector-step-num">03</span>
+                <span data-i18n="tabSettings">Ayarlar &amp; Telemetri</span>
+              </span>
+            </div>
+            <p class="inspector-card-desc" data-i18n="tabSettingsDesc">Anlık CPU gecikmesi (0.84 ms P50), 0 MB VRAM kartları, sanal mikrofon yönlendirme rehberi ve dahili hız testi.</p>
+            <div class="inspector-chips">
+              <span class="inspector-chip">0.84 ms P50</span>
+              <span class="inspector-chip">Virtual Mic</span>
+              <span class="inspector-chip">Benchmark</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div class="cta-group" data-reveal="4">
+        <a href="/downloads/ClearMic.exe" class="btn-download" download="ClearMic.exe">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+          <span>Windows (.exe)</span>
+        </a>
+        <a href="/downloads/ClearMic-macOS.dmg" class="btn-download-secondary" download="ClearMic-macOS.dmg">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.33c.64-.78 1.08-1.86.96-2.94-.93.04-2.06.62-2.72 1.4-.58.68-1.1 1.79-.96 2.84 1.04.08 2.09-.52 2.72-1.3z"/></svg>
+          <span>macOS (.dmg)</span>
+        </a>
+        <a href="/downloads/ClearMic-Linux.tar.gz" class="btn-download-secondary" download="ClearMic-Linux.tar.gz">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          <span>Linux (.tar.gz)</span>
+        </a>
+      </div>
+
+      <div class="caption-small" data-reveal="5">
+        <span data-i18n="studioCaptionPrefix">En güncel v1.0.0 sürümünü doğrudan indirir ·</span>
+        <a href="https://github.com/Andacbasaran/ClearMic/releases/latest" target="_blank" rel="noopener" data-i18n="studioCaptionLink">Tüm Paketler (GitHub Releases)</a>
+      </div>
+
+      <div class="ecosystem-line" data-reveal="5">
+        <a href="https://subvisionai.andacbasaran.com" target="_blank" rel="noopener">SubVision AI</a> · <strong>ClearMic</strong> · <a href="https://andacbasaran.com" target="_blank" rel="noopener">LocalDictate</a> · <a href="https://andacbasaran.com" target="_blank" rel="noopener">LocalMinutes</a> · <a href="https://andacbasaran.com" target="_blank" rel="noopener">LocalRecall</a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Native Fullscreen Studio Lightbox -->
+  <dialog id="studio-lightbox" class="studio-lightbox" closedby="any" aria-labelledby="lightbox-title">
+    <div class="lightbox-bar">
+      <h1 class="lightbox-title" id="lightbox-title">ClearMic Studio · 1. Canlı Stüdyo</h1>
+      <div class="lightbox-actions">
+        <button type="button" class="lightbox-btn" id="lightbox-prev" data-i18n="lightboxPrev">← Önceki</button>
+        <button type="button" class="lightbox-btn" id="lightbox-next" data-i18n="lightboxNext">Sonraki →</button>
+        <button type="button" class="lightbox-btn" id="lightbox-close" autofocus data-i18n="lightboxClose">Kapat</button>
+      </div>
+    </div>
+    <div class="lightbox-body">
+      <img id="lightbox-img" src="/assets/ui_preview.png?v=1.0.0" alt="ClearMic Studio" width="960" height="640" loading="lazy" />
+    </div>
+  </dialog>
+
+  <nav class="bottom-dock" id="bottom-dock" aria-label="Sahne Seçici">
+    <button type="button" class="dock-btn active" data-scene-target="0" aria-current="step" data-i18n="dockIntro">Tanıtım</button>
+    <button type="button" class="dock-btn" data-scene-target="1" data-i18n="dockSim">Simülatör</button>
+    <button type="button" class="dock-btn" data-scene-target="2" data-i18n="dockApp">Uygulama</button>
+  </nav>
+
+  <script>
+    window.__INITIAL_LANG__ = null;
+
+    const I18N = {
+      tr: {
+        pageTitle: "ClearMic — Sadece Sesiniz. Gürültü Sıfır.",
+        metaDescription: "Windows, macOS Apple Silicon ve Linux için ~0.84 ms CPU gecikmeli, -47.0 dB AI gürültü gidermeli, 0 MB VRAM ve %100 çevrimdışı açık kaynak gerçek zamanlı mikrofon gürültü engelleyici ve yayın ses stüdyosu.",
+        langSwitchLabel: "Dil Seçimi",
+        brandAria: "ClearMic Ana Sayfa",
+        topDownload: "İndir",
+        heroBadge: "v1.0.0 · Windows, macOS & Linux",
+        heroTitleLine1: "Sadece Sesiniz.",
+        heroTitleLine2: "Gürültü Sıfır.",
+        heroSubhead: "Mekanik klavye, PC fanı ve 60 Hz dip gürültüsünü kendi işlemcinizde ~0.84 ms gecikmeyle yok eder — Discord, OBS, Zoom ve oyunlar için 0 MB VRAM ile stüdyo kalitesinde ses.",
+        heroWinBtn: "Windows İçin İndir",
+        heroMacBtn: "macOS (Apple Silicon)",
+        heroCaptionPrefix: "v1.0.0 · Windows x64, macOS M1–M4 &",
+        heroLinuxLink: "Linux (.tar.gz)",
+        heroCaptionMid: "· %100 Ücretsiz ve",
+        heroCaptionLink: "Açık Kaynak (MIT)",
+        specLatency: "CPU Gecikmesi",
+        specVram: "VRAM · %100 Çevrimdışı",
+        specDrop: "AI Gürültü Düşüşü",
+        specMit: "Açık Kaynak MIT",
+        heroExplore: "Canlı ses simülatörünü dene",
+        simEyebrow: "İnteraktif Canlı Ses Simülatörü",
+        simTitle1: "Gürültü yok.",
+        simTitle2: "Yayın kalitesinde netlik.",
+        noisePresetsAria: "Gürültü Senaryoları",
+        noiseKeyboard: "Mekanik Klavye",
+        noiseFan: "PC Fanı",
+        noiseHum: "60 Hz Uğultu & Hiss",
+        bypassStateOn: "ClearMic AI: Açık",
+        bypassStateOff: "Bypass: Ham Ses",
+        pauseLabel: "Duraklat",
+        playLabel: "Oynat",
+        legendClean: "TEMİZ SES",
+        legendRaw: "HAM GİRİŞ",
+        dspChainAria: "DSP Sinyal Zinciri",
+        nrMeterLabel: "AI Gürültü Bastırma",
+        voiceToneLabel: "Ses Tonu:",
+        tonePresetsAria: "Ses Tonu Profili",
+        toneGaming: "Gaming",
+        toneBroadcast: "Broadcast",
+        toneMeeting: "Meeting",
+        toneNatural: "Natural",
+        engineSwitchAria: "İşleme Modu",
+        studioEyebrow: "ClearMic Studio v1.0",
+        studioTitle1: "Sade. Hızlı.",
+        studioTitle2: "Tamamen sizin kontrolünüzde.",
+        previewTabsLabel: "Arayüz Sekmeleri",
+        zoomBtn: "Tam Ekran",
+        lightboxPrev: "← Önceki",
+        lightboxNext: "Sonraki →",
+        lightboxClose: "Kapat",
+        tabStudio: "Canlı Stüdyo",
+        tabStudioDesc: "32-bant çift katmanlı FFT spektrum, tek tıkla A/B kıyaslama, tıklanabilir DSP sinyal zinciri ve hazır stüdyo profilleri.",
+        tabSculptor: "Ses Şekillendirici & A/B Lab",
+        tabSculptorDesc: "Canlı HPF + 3-Bant EQ grafiği, De-Esser, Kompresör, AGC, 6 saniyelik canlı A/B kayıt stüdyosu ve toplu .WAV temizleyici.",
+        tabSettings: "Ayarlar & Telemetri",
+        tabSettingsDesc: "Anlık CPU gecikmesi (0.84 ms P50), 0 MB VRAM kartları, sanal mikrofon yönlendirme rehberi ve dahili hız testi.",
+        previewAlt: "ClearMic Studio Uygulama Arayüzü",
+        studioCaptionPrefix: "En güncel v1.0.0 sürümünü doğrudan indirir ·",
+        studioCaptionLink: "Tüm Paketler (GitHub Releases)",
+        dockAria: "Sahne Seçici",
+        dockIntro: "Tanıtım",
+        dockSim: "Simülatör",
+        dockApp: "Uygulama"
+      },
+      en: {
+        pageTitle: "ClearMic — Pure Studio Voice. Zero Background Noise.",
+        metaDescription: "Ultra-low-latency (~0.84 ms P50 CPU), -47.0 dB average noise attenuation, 0 MB VRAM, 100% offline open-source real-time AI microphone noise suppressor and broadcast voice studio for Windows, macOS Apple Silicon, and Linux.",
+        langSwitchLabel: "Language Switcher",
+        brandAria: "ClearMic Home",
+        topDownload: "Download",
+        heroBadge: "v1.0.0 · Windows, macOS & Linux",
+        heroTitleLine1: "Pure Studio Voice.",
+        heroTitleLine2: "Zero Background Noise.",
+        heroSubhead: "Eliminates mechanical keyboards, PC fans, and 60 Hz hum locally on your CPU in ~0.84 ms — broadcast-grade voice for Discord, OBS, Zoom, and gaming with 0 MB VRAM.",
+        heroWinBtn: "Download for Windows",
+        heroMacBtn: "macOS (Apple Silicon)",
+        heroCaptionPrefix: "v1.0.0 · Windows x64, macOS M1–M4 &",
+        heroLinuxLink: "Linux (.tar.gz)",
+        heroCaptionMid: "· 100% Free &",
+        heroCaptionLink: "Open Source (MIT)",
+        specLatency: "CPU Latency",
+        specVram: "VRAM · 100% Offline",
+        specDrop: "AI Noise Drop",
+        specMit: "Open Source MIT",
+        heroExplore: "Try live audio simulator",
+        simEyebrow: "Interactive Live Audio Simulator",
+        simTitle1: "Zero noise.",
+        simTitle2: "Broadcast-grade clarity.",
+        noisePresetsAria: "Noise Scenarios",
+        noiseKeyboard: "Keyboard",
+        noiseFan: "PC Fan",
+        noiseHum: "60Hz Hum & Hiss",
+        bypassStateOn: "ClearMic AI: On",
+        bypassStateOff: "Bypass: Raw Mic",
+        pauseLabel: "Pause",
+        playLabel: "Play",
+        legendClean: "CLEAN VOICE",
+        legendRaw: "RAW INPUT",
+        dspChainAria: "DSP Signal Chain",
+        nrMeterLabel: "AI Noise Reduction",
+        voiceToneLabel: "Voice Tone:",
+        tonePresetsAria: "Voice Tone Presets",
+        toneGaming: "Gaming",
+        toneBroadcast: "Broadcast",
+        toneMeeting: "Meeting",
+        toneNatural: "Natural",
+        engineSwitchAria: "Processing Mode",
+        studioEyebrow: "ClearMic Studio v1.0",
+        studioTitle1: "Clean. Fast.",
+        studioTitle2: "Completely in your control.",
+        previewTabsLabel: "Interface Tabs",
+        zoomBtn: "Fullscreen",
+        lightboxPrev: "← Prev",
+        lightboxNext: "Next →",
+        lightboxClose: "Close",
+        tabStudio: "Live Studio",
+        tabStudioDesc: "Real-time 32-band dual-layer FFT spectrum, 1-click A/B toggle, interactive DSP signal chain, and studio voice presets.",
+        tabSculptor: "Voice Sculptor & A/B Lab",
+        tabSculptorDesc: "Live HPF + 3-Band EQ curve, De-Esser, Compressor, AGC, 6-second live A/B recording lab, and batch offline .WAV cleaner.",
+        tabSettings: "Settings & Telemetry",
+        tabSettingsDesc: "Live CPU latency (0.84 ms P50), 0 MB VRAM telemetry cards, virtual microphone routing guide, and built-in hardware benchmark.",
+        previewAlt: "ClearMic Studio Application Interface",
+        studioCaptionPrefix: "Direct download for latest v1.0.0 ·",
+        studioCaptionLink: "All Packages (GitHub Releases)",
+        dockAria: "Scene Navigation",
+        dockIntro: "Overview",
+        dockSim: "Simulator",
+        dockApp: "Studio UI"
+      }
+    };
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let activeLang = "tr";
+    let demoPaused = prefersReducedMotion;
+    const pauseBtn = document.getElementById('btn-demo-pause');
+
+    function getCookieLang() {
+      const m = document.cookie.match(/(?:^|;\s*)cm_lang=(tr|en)(?:;|$)/i);
+      return m ? m[1].toLowerCase() : null;
+    }
+
+    function detectClientLang() {
+      const path = window.location.pathname.replace(/\/+$/, "");
+      if (path === "/tr") return "tr";
+      if (path === "/en") return "en";
+
+      const params = new URLSearchParams(window.location.search);
+      const qLang = (params.get("lang") || "").toLowerCase();
+      if (qLang === "tr" || qLang === "en") return qLang;
+
+      try {
+        const stored = localStorage.getItem("cm_lang");
+        if (stored === "tr" || stored === "en") return stored;
+      } catch (_) {}
+
+      const cookieLang = getCookieLang();
+      if (cookieLang === "tr" || cookieLang === "en") return cookieLang;
+
+      if (window.__INITIAL_LANG__ === "tr" || window.__INITIAL_LANG__ === "en") {
+        return window.__INITIAL_LANG__;
+      }
+
+      const langs = Array.isArray(navigator.languages) && navigator.languages.length
+        ? navigator.languages
+        : [navigator.language || ""];
+      for (const raw of langs) {
+        const code = String(raw || "").toLowerCase();
+        if (code === "tr" || code.startsWith("tr-")) return "tr";
+        if (code === "en" || code.startsWith("en-")) return "en";
+      }
+      return "en";
+    }
+
+    function syncPauseButtonLabel() {
+      if (!pauseBtn) return;
+      const dict = I18N[activeLang] || I18N.en;
+      pauseBtn.textContent = demoPaused ? dict.playLabel : dict.pauseLabel;
+    }
+
+    /* GPU-composited cursor spotlight */
+    const cursorGlow = document.getElementById("cursor-glow");
+    if (cursorGlow && !prefersReducedMotion && window.matchMedia('(pointer: fine)').matches) {
+      let glowRaf = null;
+      let pointerX = -999;
+      let pointerY = -999;
+      window.addEventListener("pointermove", (e) => {
+        pointerX = e.clientX - 260;
+        pointerY = e.clientY - 260;
+        if (!glowRaf) {
+          glowRaf = requestAnimationFrame(() => {
+            cursorGlow.style.opacity = "1";
+            cursorGlow.style.transform = `translate3d(${pointerX}px, ${pointerY}px, 0)`;
+            glowRaf = null;
+          });
+        }
+      }, { passive: true });
+      document.addEventListener("pointerleave", () => {
+        cursorGlow.style.opacity = "0";
+      });
+    }
+
+    /* Latency smooth count-up (~0.84 ms) on load */
+    const latencyEl = document.getElementById("latency-counter");
+    if (latencyEl && !prefersReducedMotion) {
+      const targetMs = 0.84;
+      const startMs = 0.18;
+      const startTs = performance.now();
+      const duration = 700;
+      const tick = (now) => {
+        const progress = Math.min(1, (now - startTs) / duration);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        latencyEl.textContent = `~${(startMs + (targetMs - startMs) * eased).toFixed(2)} ms`;
+        if (progress < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }
+
+    /* Scene navigation */
+    let currentScene = 0;
+    const totalScenes = 3;
+    let isTransitioning = false;
+
+    function goScene(index) {
+      if (index < 0 || index >= totalScenes || index === currentScene) return;
+      isTransitioning = true;
+      currentScene = index;
+      document.body.setAttribute('data-scene', String(currentScene));
+
+      for (let i = 0; i < totalScenes; i++) {
+        const el = document.getElementById('scene-' + i);
+        el.classList.remove('active', 'prev');
+        if (i === currentScene) {
+          el.classList.add('active');
+          el.removeAttribute('inert');
+        } else {
+          if (i < currentScene) el.classList.add('prev');
+          el.setAttribute('inert', '');
+        }
+      }
+
+      document.querySelectorAll('.dock-btn').forEach((b, i) => {
+        const isCurrent = i === currentScene;
+        b.classList.toggle('active', isCurrent);
+        if (isCurrent) b.setAttribute('aria-current', 'step');
+        else b.removeAttribute('aria-current');
+      });
+
+      document.querySelectorAll('.rail-dot').forEach((d, i) => {
+        d.classList.toggle('active', i === currentScene);
+      });
+
+      if (currentScene === 1) {
+        renderSpectrumFrame(performance.now());
+      }
+
+      setTimeout(() => { isTransitioning = false; }, 480);
+    }
+
+    document.getElementById('brand-home-btn')?.addEventListener('click', () => goScene(0));
+    document.getElementById('scroll-next-btn')?.addEventListener('click', () => goScene(1));
+    document.querySelectorAll('.dock-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        goScene(Number.parseInt(btn.getAttribute('data-scene-target') || '0', 10));
+      });
+    });
+    document.querySelectorAll('.rail-dot').forEach((dot) => {
+      dot.addEventListener('click', () => {
+        goScene(Number.parseInt(dot.getAttribute('data-rail-target') || '0', 10));
+      });
+    });
+
+    window.addEventListener('wheel', (e) => {
+      if (isTransitioning || studioLightbox?.open) return;
+      if (Math.abs(e.deltaY) < 18) return;
+      if (e.deltaY > 0 && currentScene < totalScenes - 1) goScene(currentScene + 1);
+      else if (e.deltaY < 0 && currentScene > 0) goScene(currentScene - 1);
+    }, { passive: true });
+
+    let touchStartY = 0;
+    window.addEventListener('touchstart', (e) => {
+      if (e.touches.length > 0) touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    window.addEventListener('touchend', (e) => {
+      if (isTransitioning || studioLightbox?.open || e.changedTouches.length === 0) return;
+      const activeSceneEl = document.getElementById('scene-' + currentScene);
+      if (activeSceneEl && activeSceneEl.scrollHeight > activeSceneEl.clientHeight + 8) {
+        const atTop = activeSceneEl.scrollTop <= 2;
+        const atBottom = activeSceneEl.scrollTop + activeSceneEl.clientHeight >= activeSceneEl.scrollHeight - 2;
+        const dy = touchStartY - e.changedTouches[0].clientY;
+        if (dy > 45 && !atBottom) return;
+        if (dy < -45 && !atTop) return;
+      }
+      const dy = touchStartY - e.changedTouches[0].clientY;
+      if (Math.abs(dy) > 45) {
+        if (dy > 0 && currentScene < totalScenes - 1) goScene(currentScene + 1);
+        else if (dy < 0 && currentScene > 0) goScene(currentScene - 1);
+      }
+    }, { passive: true });
+
+    /* Platform-aware topbar download */
+    (function detectPlatformDownload() {
+      const topBtn = document.getElementById('topbar-download-btn');
+      if (!topBtn) return;
+      const ua = navigator.platform || navigator.userAgent;
+      const isMac = /Mac|iPhone|iPad/i.test(ua);
+      const isLinux = /Linux|X11/i.test(ua) && !/Android/i.test(navigator.userAgent || '');
+      if (isMac) {
+        topBtn.href = '/downloads/ClearMic-macOS.dmg';
+        topBtn.setAttribute('download', 'ClearMic-macOS.dmg');
+      } else if (isLinux) {
+        topBtn.href = '/downloads/ClearMic-Linux.tar.gz';
+        topBtn.setAttribute('download', 'ClearMic-Linux.tar.gz');
+      }
+    })();
+
+    /* SCENE 1: INTERACTIVE LIVE AUDIO DENOISER SIMULATOR */
+    const NUM_BANDS = 32;
+    const NOISE_SCENARIOS = [
+      {
+        id: "keyboard",
+        dropDb: 49.6,
+        snrGainDb: 28.7,
+        latencyMs: 0.84,
+        // Sharp mechanical click transients in 1.5 kHz - 9 kHz + desk thump around 120 Hz
+        noiseCurve: (i, t) => {
+          const clickPulse = 0.55 + 0.45 * Math.pow(Math.abs(Math.sin(t * 2.1 + i * 0.47)), 3);
+          const thump = Math.exp(-Math.pow((i - 3.5) / 2.6, 2)) * 0.48;
+          const clack = Math.exp(-Math.pow((i - 19.5) / 5.5, 2)) * 0.62 * clickPulse;
+          const topClick = Math.exp(-Math.pow((i - 26.5) / 3.4, 2)) * 0.52 * clickPulse;
+          return 0.14 + thump + clack + topClick;
+        }
+      },
+      {
+        id: "fan",
+        dropDb: 26.2,
+        snrGainDb: 21.4,
+        latencyMs: 0.84,
+        // Steady dense broadband PC fan rumble across 80 Hz - 1.2 kHz + soft air whoosh
+        noiseCurve: (i, t) => {
+          const flutter = 0.92 + 0.08 * Math.sin(t * 1.4 + i * 0.25);
+          const lowHump = Math.exp(-Math.pow((i - 6.5) / 5.2, 2)) * 0.68;
+          const midBody = Math.exp(-Math.pow((i - 14.0) / 7.0, 2)) * 0.42;
+          const air = Math.exp(-Math.pow((i - 23.0) / 6.0, 2)) * 0.24;
+          return (0.18 + lowHump + midBody + air) * flutter;
+        }
+      },
+      {
+        id: "hum",
+        dropDb: 59.9,
+        snrGainDb: 31.2,
+        latencyMs: 0.84,
+        // Heavy 60 Hz / 120 Hz ground hum spikes + broadband preamp hiss shelf above 4 kHz
+        noiseCurve: (i, t) => {
+          const shimmer = 0.94 + 0.06 * Math.sin(t * 1.8 + i * 0.6);
+          const hum60 = Math.exp(-Math.pow((i - 1.2) / 1.4, 2)) * 0.82;
+          const hum120 = Math.exp(-Math.pow((i - 4.0) / 1.5, 2)) * 0.54;
+          const hiss = (1 / (1 + Math.exp(-(i - 19) * 0.45))) * 0.60;
+          return (0.12 + hum60 + hum120 + hiss) * shimmer;
+        }
+      }
+    ];
+
+    const VOICE_TONES = {
+      gaming:    { low: 0.96, mid: 1.12, air: 1.05 },
+      broadcast: { low: 1.18, mid: 1.08, air: 1.14 },
+      meeting:   { low: 0.88, mid: 1.15, air: 0.92 },
+      natural:   { low: 1.00, mid: 1.00, air: 1.02 }
+    };
+
+    let scenarioIdx = 0;
+    let isBypassed = false;
+    let activeTone = "gaming";
+    const dspState = {
+      hpf: true,
+      gtcrn: true,
+      gate: true,
+      deess: true,
+      eq: true,
+      comp: true
+    };
+
+    const audioViewport = document.getElementById('audio-viewport');
+    const fftStage = document.getElementById('fft-stage');
+    const telNr = document.getElementById('tel-nr');
+    const telLatency = document.getElementById('tel-latency');
+    const nrMeterFill = document.getElementById('nr-meter-fill');
+    const nrMeterVal = document.getElementById('nr-meter-val');
+    const bypassBtn = document.getElementById('btn-sim-bypass');
+    const bypassKeyLabel = document.getElementById('bypass-key-label');
+
+    const rawBars = [];
+    const cleanBars = [];
+    if (fftStage) {
+      const frag = document.createDocumentFragment();
+      for (let i = 0; i < NUM_BANDS; i++) {
+        const col = document.createElement('div');
+        col.className = 'fft-col';
+        const raw = document.createElement('div');
+        raw.className = 'fft-bar-raw';
+        const clean = document.createElement('div');
+        clean.className = 'fft-bar-clean';
+        col.appendChild(raw);
+        col.appendChild(clean);
+        frag.appendChild(col);
+        rawBars.push(raw);
+        cleanBars.push(clean);
+      }
+      fftStage.appendChild(frag);
+    }
+
+    function computeEffectiveDropDb() {
+      const sc = NOISE_SCENARIOS[scenarioIdx] || NOISE_SCENARIOS[0];
+      if (isBypassed) return 0;
+      let drop = 0;
+      if (dspState.gtcrn) drop += sc.dropDb * 0.84;
+      if (dspState.hpf) drop += (sc.id === 'hum' ? 8.2 : sc.id === 'fan' ? 4.4 : 2.6);
+      if (dspState.gate) drop += sc.dropDb * 0.10;
+      if (dspState.deess && sc.id !== 'fan') drop += 1.4;
+      return Math.min(sc.dropDb, Number(drop.toFixed(1)));
+    }
+
+    function syncSimulatorChrome() {
+      const dict = I18N[activeLang] || I18N.en;
+      const sc = NOISE_SCENARIOS[scenarioIdx] || NOISE_SCENARIOS[0];
+      const effectiveDrop = computeEffectiveDropDb();
+
+      if (audioViewport) {
+        audioViewport.classList.toggle('is-bypass', isBypassed);
+      }
+      if (bypassBtn) {
+        bypassBtn.classList.toggle('is-bypass', isBypassed);
+        bypassBtn.classList.toggle('is-active', !isBypassed);
+      }
+      if (bypassKeyLabel) {
+        bypassKeyLabel.textContent = isBypassed ? dict.bypassStateOff : dict.bypassStateOn;
+      }
+
+      document.querySelectorAll('#noise-presets .preset-btn').forEach((btn, i) => {
+        btn.setAttribute('aria-pressed', String(i === scenarioIdx));
+      });
+
+      document.querySelectorAll('#engine-switch .mode-btn').forEach((btn) => {
+        const eng = btn.getAttribute('data-engine');
+        btn.setAttribute('aria-pressed', String(isBypassed ? eng === 'bypass' : eng === 'ai'));
+      });
+
+      document.querySelectorAll('#dsp-chain .dsp-pill').forEach((btn) => {
+        const stage = btn.getAttribute('data-stage');
+        if (stage && Object.prototype.hasOwnProperty.call(dspState, stage)) {
+          btn.setAttribute('aria-pressed', String(dspState[stage]));
+        }
+      });
+
+      document.querySelectorAll('#tone-presets .tone-btn').forEach((btn) => {
+        btn.setAttribute('aria-pressed', String(btn.getAttribute('data-tone') === activeTone));
+      });
+
+      if (telLatency) {
+        const ms = isBypassed ? "0.10" : (dspState.gtcrn ? sc.latencyMs.toFixed(2) : "0.12");
+        telLatency.textContent = `${ms} ms P50`;
+      }
+
+      if (telNr) {
+        if (isBypassed || effectiveDrop <= 0.1) {
+          telNr.textContent = "BYPASS · 0.0 dB";
+          telNr.classList.remove('accent');
+          telNr.classList.add('bypass');
+        } else {
+          telNr.textContent = `-${effectiveDrop.toFixed(1)} dB`;
+          telNr.classList.add('accent');
+          telNr.classList.remove('bypass');
+        }
+      }
+
+      if (nrMeterFill) {
+        const ratio = isBypassed ? 0.03 : Math.max(0.06, Math.min(1, effectiveDrop / 62));
+        nrMeterFill.style.transform = `scaleX(${ratio.toFixed(3)})`;
+      }
+
+      if (nrMeterVal) {
+        if (isBypassed || effectiveDrop <= 0.1) {
+          nrMeterVal.textContent = "0.0 dB · BYPASS";
+        } else {
+          const snr = (sc.snrGainDb * (effectiveDrop / sc.dropDb)).toFixed(1);
+          nrMeterVal.textContent = `-${effectiveDrop.toFixed(1)} dB · +${snr} dB SNR`;
+        }
+      }
+    }
+
+    function renderSpectrumFrame(nowMs) {
+      if (rawBars.length === 0) return;
+      const t = (demoPaused || prefersReducedMotion) ? 1.85 : (nowMs * 0.0018);
+      const sc = NOISE_SCENARIOS[scenarioIdx] || NOISE_SCENARIOS[0];
+      const tone = VOICE_TONES[activeTone] || VOICE_TONES.gaming;
+
+      // Subtle speech envelope modulation (gentle cadence, well under 3 Hz)
+      const speechPhrase = 0.72 + 0.24 * Math.sin(t * 1.15) + 0.08 * Math.cos(t * 2.05);
+
+      for (let i = 0; i < NUM_BANDS; i++) {
+        // Human vocal formants: fundamental (~160-320 Hz), F1/F2 (~500-2800 Hz), 7.2-20 kHz air
+        const f0 = Math.exp(-Math.pow((i - 7.0) / 3.0, 2)) * 0.64 * (dspState.eq ? tone.low : 1.0);
+        const f1 = Math.exp(-Math.pow((i - 12.5) / 3.6, 2)) * 0.76 * (dspState.eq ? tone.mid : 1.0);
+        const f2 = Math.exp(-Math.pow((i - 18.5) / 3.8, 2)) * 0.48 * (dspState.eq ? tone.mid : 1.0);
+        const air = Math.exp(-Math.pow((i - 25.5) / 3.2, 2)) * 0.28 * (dspState.eq ? tone.air : 1.0);
+        const organic = 0.86 + 0.14 * Math.sin(t * 1.9 + i * 0.52);
+
+        let voice = (f0 + f1 + f2 + air) * speechPhrase * organic;
+        if (dspState.hpf && i < 4) {
+          voice *= (0.18 + i * 0.22);
+        }
+        if (dspState.deess && i >= 21 && i <= 26) {
+          voice *= 0.84;
+        }
+        if (dspState.comp) {
+          voice = Math.pow(Math.max(0.02, voice), 0.88);
+        }
+
+        const noise = sc.noiseCurve(i, t);
+        const rawVal = Math.min(0.98, Math.max(0.08, voice * 0.82 + noise * 0.92));
+
+        let cleanVal;
+        if (isBypassed) {
+          cleanVal = Math.max(0.07, rawVal * 0.34);
+        } else {
+          const aiFactor = dspState.gtcrn ? 0.06 : 0.62;
+          const hpfFactor = (dspState.hpf && i < 4) ? 0.15 : 1.0;
+          const gateFactor = dspState.gate ? 0.82 : 1.0;
+          const residualNoise = noise * aiFactor * hpfFactor * gateFactor;
+          cleanVal = Math.min(0.95, Math.max(0.04, voice * 0.94 + residualNoise));
+        }
+
+        rawBars[i].style.transform = `scaleY(${rawVal.toFixed(3)})`;
+        cleanBars[i].style.transform = `scaleY(${cleanVal.toFixed(3)})`;
+      }
+    }
+
+    function setBypass(nextBypass) {
+      isBypassed = Boolean(nextBypass);
+      syncSimulatorChrome();
+      renderSpectrumFrame(performance.now());
+    }
+
+    function selectScenario(nextIdx) {
+      scenarioIdx = ((nextIdx % NOISE_SCENARIOS.length) + NOISE_SCENARIOS.length) % NOISE_SCENARIOS.length;
+      syncSimulatorChrome();
+      renderSpectrumFrame(performance.now());
+    }
+
+    document.querySelectorAll('#noise-presets .preset-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        selectScenario(Number.parseInt(btn.getAttribute('data-preset') || '0', 10));
+      });
+    });
+
+    bypassBtn?.addEventListener('click', () => setBypass(!isBypassed));
+
+    document.querySelectorAll('#engine-switch .mode-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        setBypass(btn.getAttribute('data-engine') === 'bypass');
+      });
+    });
+
+    document.querySelectorAll('#dsp-chain .dsp-pill').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const stage = btn.getAttribute('data-stage');
+        if (!stage || !Object.prototype.hasOwnProperty.call(dspState, stage)) return;
+        if (isBypassed) {
+          isBypassed = false;
+          dspState[stage] = true;
+        } else {
+          dspState[stage] = !dspState[stage];
+        }
+        syncSimulatorChrome();
+        renderSpectrumFrame(performance.now());
+      });
+    });
+
+    document.querySelectorAll('#tone-presets .tone-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const tone = btn.getAttribute('data-tone');
+        if (!tone || !VOICE_TONES[tone]) return;
+        activeTone = tone;
+        syncSimulatorChrome();
+        renderSpectrumFrame(performance.now());
+      });
+    });
+
+    pauseBtn?.addEventListener('click', () => {
+      demoPaused = !demoPaused;
+      syncPauseButtonLabel();
+      renderSpectrumFrame(performance.now());
+    });
+
+    /* Throttled ~24fps live FFT spectrum loop (pauses cleanly when not on Scene 1 or paused/reduced-motion) */
+    let lastFftTick = 0;
+    function fftLoop(ts) {
+      if (currentScene === 1 && !demoPaused && !prefersReducedMotion && !document.hidden) {
+        if (ts - lastFftTick >= 42) {
+          lastFftTick = ts;
+          renderSpectrumFrame(ts);
+        }
+      }
+      requestAnimationFrame(fftLoop);
+    }
+    requestAnimationFrame(fftLoop);
+
+    setInterval(() => {
+      if (demoPaused || prefersReducedMotion || currentScene !== 1 || document.hidden) return;
+      selectScenario((scenarioIdx + 1) % NOISE_SCENARIOS.length);
+    }, 4200);
+
+    /* SCENE 2: STUDIO 2.0 SHOWCASE, HOTSPOTS, TABS, 3D TILT & NATIVE LIGHTBOX */
+    const STUDIO_TABS = [
+      {
+        img: "/assets/ui_preview.png?v=1.0.0",
+        title: { tr: "ClearMic Studio · 1. Canlı Stüdyo", en: "ClearMic Studio · 1. Live Studio" },
+        pins: [
+          {
+            x: "61%",
+            y: "38%",
+            title: { tr: "Canlı Çift Katmanlı FFT Spektrum:", en: "Live Dual-Layer FFT Spectrum:" },
+            desc: {
+              tr: "Turuncu ham gürültü katmanı ile elektrik camgöbeği temiz sesi gerçek zamanlı izle — ortalama -47.0 dB gürültü düşüşü.",
+              en: "Watch amber raw microphone noise collapse beneath Electric Cyan clean voice in real time — averaging -47.0 dB noise drop."
+            }
+          },
+          {
+            x: "48%",
+            y: "59%",
+            title: { tr: "İnteraktif DSP Zinciri & Canlı A/B:", en: "Interactive DSP Chain & Live A/B:" },
+            desc: {
+              tr: "HPF → GTCRN AI → Gate → De-Ess → EQ → Comp → AGC modüllerini tek tıkla yönet, Ctrl+Shift+B ile anında kıyasla.",
+              en: "Toggle HPF → GTCRN AI → Gate → De-Ess → EQ → Comp → AGC live and A/B compare raw vs clean instantly with Ctrl+Shift+B."
+            }
+          }
+        ]
+      },
+      {
+        img: "/assets/ui_preview_sculptor.png?v=1.0.0",
+        title: { tr: "ClearMic Studio · 2. Ses Şekillendirici & A/B Lab", en: "ClearMic Studio · 2. Voice Sculptor & A/B Lab" },
+        pins: [
+          {
+            x: "64%",
+            y: "20%",
+            title: { tr: "Canlı Frekans Tepkisi (HPF + 3-Bant EQ):", en: "Live Frequency Response (HPF + 3-Band EQ):" },
+            desc: {
+              tr: "Warmth (120 Hz), Presence (2.8 kHz), Air (8 kHz) ve De-Esser ile yayın kalitesinde sıcak, net bir ses tonu şekillendir.",
+              en: "Sculpt broadcast-grade warmth (120 Hz), presence (2.8 kHz), vocal air (8 kHz), and sibilance control in real time."
+            }
+          },
+          {
+            x: "56%",
+            y: "89%",
+            title: { tr: "6s A/B Stüdyosu & Çevrimdışı WAV Temizleyici:", en: "6s A/B Lab & Offline WAV Cleaner:" },
+            desc: {
+              tr: "6 saniye kaydet, oynatma sırasında Temiz ve Ham arasında anlık geçiş yap veya kayıtlı .wav dosyalarını topluca temizle.",
+              en: "Record a 6-second clip, switch live between Clean and Raw mid-playback, or batch-clean existing .wav recordings."
+            }
+          }
+        ]
+      },
+      {
+        img: "/assets/ui_preview_settings.png?v=1.0.0",
+        title: { tr: "ClearMic Studio · 3. Ayarlar & Telemetri", en: "ClearMic Studio · 3. Settings & Telemetry" },
+        pins: [
+          {
+            x: "34%",
+            y: "17%",
+            title: { tr: "Gerçek Zamanlı Donanım Telemetrisi:", en: "Real-Time Hardware Telemetry:" },
+            desc: {
+              tr: "0.84 ms P50 CPU gecikmesi (16 ms bütçeye karşı 18.9× pay), -47.0 dB gürültü düşüşü ve 0 MB VRAM ile sıfır oyun FPS kaybı.",
+              en: "0.84 ms P50 CPU latency (18.9x headroom vs 16 ms budget), -47.0 dB noise drop, and 0 MB VRAM for zero gaming FPS loss."
+            }
+          },
+          {
+            x: "83%",
+            y: "49%",
+            title: { tr: "GTCRN ONNX Motoru, Sanal Mik & Benchmark:", en: "GTCRN ONNX Engine, Virtual Mic & Benchmark:" },
+            desc: {
+              tr: "VB-Cable, BlackHole veya PipeWire sanal mikrofonunu saniyeler içinde yönlendir ve kendi işlemcinde hız testi çalıştır.",
+              en: "Route VB-Cable, BlackHole, or PipeWire virtual mics in seconds and run the built-in CPU latency benchmark anytime."
+            }
+          }
+        ]
+      }
+    ];
+
+    let activeStudioTab = 0;
+    let activePinIdx = 0;
+    const inspectorTabs = Array.from(document.querySelectorAll('#preview-tablist [role="tab"]'));
+
+    function renderStudioHotspot(pinIdx) {
+      const tab = STUDIO_TABS[activeStudioTab];
+      if (!tab) return;
+      activePinIdx = pinIdx;
+      const pinData = tab.pins[pinIdx] || tab.pins[0];
+      const lang = activeLang === "tr" ? "tr" : "en";
+
+      const numEl = document.getElementById("callout-num");
+      const titleEl = document.getElementById("callout-title");
+      const descEl = document.getElementById("callout-desc");
+      if (numEl) numEl.textContent = String(pinIdx + 1);
+      if (titleEl) titleEl.textContent = pinData.title[lang];
+      if (descEl) descEl.textContent = pinData.desc[lang];
+
+      document.querySelectorAll(".hotspot-pin").forEach((el, i) => {
+        el.setAttribute("aria-pressed", String(i === pinIdx));
+      });
+    }
+
+    function syncStudioMetaForLanguage() {
+      const tab = STUDIO_TABS[activeStudioTab];
+      if (!tab) return;
+      const lang = activeLang === "tr" ? "tr" : "en";
+      const winTitle = document.getElementById("window-title-text");
+      const lbTitle = document.getElementById("lightbox-title");
+      if (winTitle) winTitle.textContent = tab.title[lang];
+      if (lbTitle) lbTitle.textContent = tab.title[lang];
+      renderStudioHotspot(activePinIdx);
+    }
+
+    function switchPreviewTab(tabIdx, animate = true) {
+      const tab = STUDIO_TABS[tabIdx];
+      const img = document.getElementById('studio-preview-img');
+      const lbImg = document.getElementById('lightbox-img');
+      if (!img || !tab) return;
+      activeStudioTab = tabIdx;
+      activePinIdx = 0;
+
+      if (animate) {
+        img.classList.add('switching');
+        setTimeout(() => {
+          img.src = tab.img;
+          img.classList.remove('switching');
+        }, 140);
+      } else {
+        img.src = tab.img;
+      }
+      if (lbImg) lbImg.src = tab.img;
+
+      inspectorTabs.forEach((card, i) => {
+        const active = i === tabIdx;
+        card.setAttribute('aria-selected', String(active));
+        card.setAttribute('tabindex', active ? '0' : '-1');
+      });
+
+      document.querySelectorAll('.hotspot-pin').forEach((pinEl, i) => {
+        const cfg = tab.pins[i];
+        if (!cfg) return;
+        pinEl.style.setProperty('--x', cfg.x);
+        pinEl.style.setProperty('--y', cfg.y);
+      });
+
+      syncStudioMetaForLanguage();
+    }
+
+    inspectorTabs.forEach((card, idx) => {
+      card.addEventListener('click', () => switchPreviewTab(idx));
+      card.addEventListener('keydown', (e) => {
+        let next = null;
+        if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+          next = (idx + 1) % inspectorTabs.length;
+        } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+          next = (idx + inspectorTabs.length - 1) % inspectorTabs.length;
+        } else if (e.key === 'Home') {
+          next = 0;
+        } else if (e.key === 'End') {
+          next = inspectorTabs.length - 1;
+        }
+        if (next !== null) {
+          e.preventDefault();
+          switchPreviewTab(next);
+          inspectorTabs[next].focus();
+        }
+      });
+    });
+
+    document.querySelectorAll('.hotspot-pin').forEach((pinEl) => {
+      const idx = Number.parseInt(pinEl.getAttribute('data-pin') || '0', 10);
+      pinEl.addEventListener('click', () => renderStudioHotspot(idx));
+      pinEl.addEventListener('mouseenter', () => renderStudioHotspot(idx));
+    });
+
+    /* Native Dialog Lightbox with Top-Layer Exit Fallback + closedby="any" Fallback */
+    const studioLightbox = document.getElementById('studio-lightbox');
+    let supportsDisplayTransition;
+    function canTransitionDisplay() {
+      if (supportsDisplayTransition !== undefined) return supportsDisplayTransition;
+      if (!window.CSS?.supports?.('transition-behavior', 'allow-discrete') || !document.body) {
+        return false;
+      }
+      const probe = document.createElement('div');
+      probe.style.cssText = 'transition: display 1s allow-discrete !important; display: block;';
+      document.body.appendChild(probe);
+      getComputedStyle(probe).display;
+      probe.style.display = 'none';
+      supportsDisplayTransition = getComputedStyle(probe).display === 'block';
+      probe.remove();
+      return supportsDisplayTransition;
+    }
+
+    function supportsTopLayerExit() {
+      return window.CSS?.supports?.('overlay', 'auto') && canTransitionDisplay();
+    }
+
+    async function closeTopLayer(dialogEl) {
+      if (!dialogEl || !dialogEl.open) return;
+      if (!supportsTopLayerExit()) {
+        dialogEl.setAttribute('data-closing', '');
+        const animations = dialogEl.getAnimations({ subtree: true });
+        if (animations.length > 0) {
+          await Promise.race([
+            Promise.allSettled(animations.map((a) => a.finished)),
+            new Promise((r) => setTimeout(r, 600))
+          ]);
+        }
+        if (!dialogEl.hasAttribute('data-closing')) return;
+        dialogEl.removeAttribute('data-closing');
+      }
+      dialogEl.close();
+    }
+
+    function openLightbox() {
+      if (!studioLightbox || studioLightbox.open) return;
+      const tab = STUDIO_TABS[activeStudioTab];
+      const lbImg = document.getElementById('lightbox-img');
+      if (lbImg && tab) lbImg.src = tab.img;
+      syncStudioMetaForLanguage();
+      studioLightbox.showModal();
+    }
+
+    document.getElementById('btn-open-lightbox')?.addEventListener('click', openLightbox);
+    document.getElementById('studio-preview-img')?.addEventListener('click', openLightbox);
+    document.getElementById('lightbox-close')?.addEventListener('click', () => closeTopLayer(studioLightbox));
+    document.getElementById('lightbox-prev')?.addEventListener('click', () => {
+      switchPreviewTab((activeStudioTab + STUDIO_TABS.length - 1) % STUDIO_TABS.length, false);
+    });
+    document.getElementById('lightbox-next')?.addEventListener('click', () => {
+      switchPreviewTab((activeStudioTab + 1) % STUDIO_TABS.length, false);
+    });
+
+    studioLightbox?.addEventListener('cancel', (e) => {
+      e.preventDefault();
+      closeTopLayer(studioLightbox);
+    });
+
+    studioLightbox?.addEventListener('close', () => {
+      studioLightbox.returnValue = '';
+    });
+
+    /* Fallback light-dismiss for browsers without native closedby="any" (e.g. Safari) */
+    if (!('closedBy' in HTMLDialogElement.prototype)) {
+      const outside = (e, dialog) => {
+        const r = dialog.getBoundingClientRect();
+        return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+      };
+      for (const dialog of document.querySelectorAll('dialog[closedby="any"]')) {
+        let pressedOutside = false;
+        dialog.addEventListener('pointerdown', (e) => {
+          pressedOutside = outside(e, dialog);
+        });
+        dialog.addEventListener('pointerup', (e) => {
+          if (pressedOutside && outside(e, dialog)) {
+            closeTopLayer(dialog);
+          }
+          pressedOutside = false;
+        });
+      }
+    }
+
+    /* Keyboard shortcuts (Scene navigation + Scene 1 'B' bypass hotkey + Lightbox arrows) */
+    window.addEventListener('keydown', (e) => {
+      if (studioLightbox?.open) {
+        if (e.key === 'ArrowLeft') {
+          switchPreviewTab((activeStudioTab + STUDIO_TABS.length - 1) % STUDIO_TABS.length, false);
+        } else if (e.key === 'ArrowRight') {
+          switchPreviewTab((activeStudioTab + 1) % STUDIO_TABS.length, false);
+        }
+        return;
+      }
+
+      const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+      if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+        if (document.activeElement && document.activeElement.getAttribute('role') === 'tab') return;
+        if (currentScene < totalScenes - 1) goScene(currentScene + 1);
+      } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+        if (document.activeElement && document.activeElement.getAttribute('role') === 'tab') return;
+        if (currentScene > 0) goScene(currentScene - 1);
+      } else if (currentScene === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === 'b' || e.key === 'B')) {
+        e.preventDefault();
+        setBypass(!isBypassed);
+      }
+    });
+
+    /* Subtle 3D tilt on Studio Frame */
+    const tiltCard = document.getElementById('studio-tilt-card');
+    if (tiltCard && !prefersReducedMotion && window.matchMedia('(pointer: fine)').matches) {
+      tiltCard.addEventListener('pointermove', (e) => {
+        const rect = tiltCard.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width - 0.5;
+        const y = (e.clientY - rect.top) / rect.height - 0.5;
+        tiltCard.style.transform = `rotateX(${(-y * 4.5).toFixed(2)}deg) rotateY(${(x * 5.5).toFixed(2)}deg)`;
+      });
+      tiltCard.addEventListener('pointerleave', () => {
+        tiltCard.style.transform = 'rotateX(0deg) rotateY(0deg)';
+      });
+    }
+
+    /* Bilingual Language Applier */
+    function applyLanguage(lang, persist = false) {
+      const normalized = lang === "tr" ? "tr" : "en";
+      activeLang = normalized;
+      const dict = I18N[normalized];
+
+      document.documentElement.lang = normalized;
+      document.title = dict.pageTitle;
+      const descMeta = document.querySelector('meta[name="description"]');
+      if (descMeta) descMeta.setAttribute("content", dict.metaDescription);
+
+      document.querySelectorAll("[data-i18n]").forEach((el) => {
+        const key = el.getAttribute("data-i18n");
+        if (key && Object.prototype.hasOwnProperty.call(dict, key)) {
+          el.textContent = dict[key];
+        }
+      });
+
+      const ariaMap = [
+        ["lang-switch", dict.langSwitchLabel],
+        ["brand-home-btn", dict.brandAria],
+        ["noise-presets", dict.noisePresetsAria],
+        ["dsp-chain", dict.dspChainAria],
+        ["tone-presets", dict.tonePresetsAria],
+        ["engine-switch", dict.engineSwitchAria],
+        ["preview-tablist", dict.previewTabsLabel],
+        ["bottom-dock", dict.dockAria]
+      ];
+      for (const [id, label] of ariaMap) {
+        const node = document.getElementById(id);
+        if (node) node.setAttribute("aria-label", label);
+      }
+
+      const previewImg = document.getElementById("studio-preview-img");
+      if (previewImg) previewImg.setAttribute("alt", dict.previewAlt);
+
+      document.querySelectorAll(".lang-btn").forEach((btn) => {
+        const isSelected = btn.getAttribute("data-lang") === normalized;
+        btn.setAttribute("aria-pressed", String(isSelected));
+      });
+
+      syncPauseButtonLabel();
+      syncSimulatorChrome();
+      syncStudioMetaForLanguage();
+
+      if (persist) {
+        try { localStorage.setItem("cm_lang", normalized); } catch (_) {}
+        document.cookie = `cm_lang=${normalized}; path=/; max-age=31536000; SameSite=Lax`;
+
+        const currentPath = window.location.pathname.replace(/\/+$/, "");
+        if (currentPath === "/tr" || currentPath === "/en") {
+          window.history.replaceState(null, "", `/${normalized}`);
+        }
+      }
+    }
+
+    document.querySelectorAll(".lang-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const targetLang = btn.getAttribute("data-lang");
+        if (targetLang && targetLang !== activeLang) {
+          applyLanguage(targetLang, true);
+        }
+      });
+    });
+
+    /* Initial hydration */
+    applyLanguage(detectClientLang(), false);
+    switchPreviewTab(0, false);
+    renderSpectrumFrame(performance.now());
+  </script>
+</body>
+</html>

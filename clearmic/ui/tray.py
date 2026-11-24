@@ -1,4 +1,4 @@
-"""System tray integration with programmatic microphone status icon."""
+"""Cross-platform HiDPI system tray integration for ClearMic Studio 2.0."""
 
 from __future__ import annotations
 
@@ -6,44 +6,52 @@ from PyQt6.QtCore import QRectF, Qt, pyqtSignal
 from PyQt6.QtGui import QAction, QColor, QIcon, QPainter, QPen, QPixmap
 from PyQt6.QtWidgets import QMenu, QSystemTrayIcon, QWidget
 
+from clearmic.i18n import LanguageManager
+
 
 def create_status_icon(state: str = "stopped") -> QIcon:
-    """Draw a crisp 64x64 microphone icon ('active', 'bypass', 'muted', 'stopped')."""
-    pixmap = QPixmap(64, 64)
+    """Draw a crisp 2x HiDPI microphone status icon ('active', 'bypass', 'muted', 'stopped')."""
+    px = 64
+    pixmap = QPixmap(px, px)
     pixmap.fill(Qt.GlobalColor.transparent)
 
     painter = QPainter(pixmap)
-    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    try:
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-    bg_map = {
-        "active": QColor("#10B981"),
-        "bypass": QColor("#F59E0B"),
-        "muted": QColor("#EF4444"),
-        "stopped": QColor("#4B5563"),
-    }
-    bg = bg_map.get(state, bg_map["stopped"])
+        ring_map = {
+            "active": QColor("#10B981"),
+            "bypass": QColor("#F59E0B"),
+            "muted": QColor("#E11D48"),
+            "stopped": QColor("#52525B"),
+        }
+        ring = ring_map.get(state, ring_map["stopped"])
 
-    painter.setPen(Qt.PenStyle.NoPen)
-    painter.setBrush(bg)
-    painter.drawEllipse(QRectF(4, 4, 56, 56))
+        # Obsidian badge with state-colored ring
+        painter.setPen(QPen(ring, 5.0))
+        painter.setBrush(QColor("#111114"))
+        painter.drawRoundedRect(QRectF(5, 5, 54, 54), 14, 14)
 
-    fg = QColor("#0B0F14") if state in ("active", "bypass") else QColor("#F8FAFC")
-    painter.setBrush(fg)
-    painter.drawRoundedRect(QRectF(24, 15, 16, 23), 8, 8)
+        fg = QColor("#FAFAFA") if state != "stopped" else QColor("#A1A1AA")
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(fg)
+        painter.drawRoundedRect(QRectF(25, 14, 14, 22), 7, 7)
 
-    pen = QPen(fg, 4.0, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
-    painter.setPen(pen)
-    painter.setBrush(Qt.BrushStyle.NoBrush)
-    painter.drawArc(QRectF(18, 22, 28, 22), 180 * 16, 180 * 16)
-    painter.drawLine(32, 44, 32, 51)
-    painter.drawLine(24, 51, 40, 51)
+        pen = QPen(fg, 3.6, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
+        painter.setPen(pen)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.drawArc(QRectF(19, 21, 26, 20), 180 * 16, 180 * 16)
+        painter.drawLine(32, 42, 32, 49)
+        painter.drawLine(25, 49, 39, 49)
 
-    if state == "muted":
-        slash_pen = QPen(QColor("#FFFFFF"), 4.5, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
-        painter.setPen(slash_pen)
-        painter.drawLine(16, 16, 48, 48)
+        if state == "muted":
+            slash_pen = QPen(QColor("#E11D48"), 4.2, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
+            painter.setPen(slash_pen)
+            painter.drawLine(16, 16, 48, 48)
+    finally:
+        painter.end()
 
-    painter.end()
+    pixmap.setDevicePixelRatio(2.0)
     return QIcon(pixmap)
 
 
@@ -54,18 +62,22 @@ class ClearMicTray(QSystemTrayIcon):
     toggle_bypass_requested = pyqtSignal()
     quit_requested = pyqtSignal()
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(self, i18n: LanguageManager, parent: QWidget | None = None) -> None:
         super().__init__(create_status_icon("stopped"), parent)
-        self.setToolTip("ClearMic — Beklemede")
+        self._i18n = i18n
+        self._running = False
+        self._bypass = False
+        self._muted = False
+        self._denoiser_name = ""
 
         self._menu = QMenu()
-        self._act_show = QAction("ClearMic'i Göster / Gizle", self._menu)
-        self._act_toggle = QAction("Gürültü Engellemeyi Başlat", self._menu)
-        self._act_mute = QAction("Mikrofonu Sustur (Mute)", self._menu)
+        self._act_show = QAction("", self._menu)
+        self._act_toggle = QAction("", self._menu)
+        self._act_mute = QAction("", self._menu)
         self._act_mute.setCheckable(True)
-        self._act_bypass = QAction("A/B: Ham Ses (Bypass)", self._menu)
+        self._act_bypass = QAction("", self._menu)
         self._act_bypass.setCheckable(True)
-        self._act_quit = QAction("Çıkış", self._menu)
+        self._act_quit = QAction("", self._menu)
 
         self._act_show.triggered.connect(self.toggle_window_requested.emit)
         self._act_toggle.triggered.connect(self.toggle_engine_requested.emit)
@@ -83,6 +95,26 @@ class ClearMicTray(QSystemTrayIcon):
 
         self.setContextMenu(self._menu)
         self.activated.connect(self._on_activated)
+        self.retranslate()
+
+    @staticmethod
+    def is_supported() -> bool:
+        try:
+            return bool(QSystemTrayIcon.isSystemTrayAvailable())
+        except Exception:
+            return False
+
+    def safe_show(self) -> None:
+        if self.is_supported():
+            self.show()
+
+    def retranslate(self) -> None:
+        t = self._i18n.t
+        self._act_show.setText(t("tray_show"))
+        self._act_mute.setText(t("tray_mute"))
+        self._act_bypass.setText(t("tray_bypass"))
+        self._act_quit.setText(t("tray_quit"))
+        self.set_state(self._running, self._bypass, self._muted, self._denoiser_name)
 
     def _on_activated(self, reason: QSystemTrayIcon.ActivationReason) -> None:
         if reason in (
@@ -94,22 +126,29 @@ class ClearMicTray(QSystemTrayIcon):
     def set_state(
         self, running: bool, bypass: bool, muted: bool = False, denoiser_name: str = ""
     ) -> None:
+        self._running = running
+        self._bypass = bypass
+        self._muted = muted
+        self._denoiser_name = denoiser_name
+        t = self._i18n.t
+
         if not running:
             self.setIcon(create_status_icon("stopped"))
-            self.setToolTip("ClearMic — Durduruldu")
-            self._act_toggle.setText("Gürültü Engellemeyi Başlat")
+            self.setToolTip(f"ClearMic — {t('badge_idle')}")
+            self._act_toggle.setText(t("tray_start"))
         elif muted:
             self.setIcon(create_status_icon("muted"))
-            self.setToolTip("ClearMic — Mikrofon Susturuldu (Mute)")
-            self._act_toggle.setText("Gürültü Engellemeyi Durdur")
+            self.setToolTip(f"ClearMic — {t('badge_muted')}")
+            self._act_toggle.setText(t("tray_stop"))
         elif bypass:
             self.setIcon(create_status_icon("bypass"))
-            self.setToolTip("ClearMic — A/B Bypass (Ham Ses)")
-            self._act_toggle.setText("Gürültü Engellemeyi Durdur")
+            self.setToolTip(f"ClearMic — {t('badge_bypass')}")
+            self._act_toggle.setText(t("tray_stop"))
         else:
             self.setIcon(create_status_icon("active"))
-            self.setToolTip(f"ClearMic — Aktif ({denoiser_name})")
-            self._act_toggle.setText("Gürültü Engellemeyi Durdur")
+            suffix = f" ({denoiser_name})" if denoiser_name else ""
+            self.setToolTip(f"ClearMic — {t('badge_live')}{suffix}")
+            self._act_toggle.setText(t("tray_stop"))
 
         self._act_mute.blockSignals(True)
         self._act_mute.setChecked(muted)

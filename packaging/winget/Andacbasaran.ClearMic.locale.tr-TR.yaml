@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.locale.1.6.0.schema.json
+PackageIdentifier: Andacbasaran.ClearMic
+PackageVersion: 1.0.0
+PackageLocale: tr-TR
+Publisher: Andac Basaran
+PublisherUrl: https://clearmic.andacbasaran.com
+PublisherSupportUrl: https://github.com/Andacbasaran/ClearMic/issues
+PackageName: ClearMic
+PackageUrl: https://clearmic.andacbasaran.com
+License: MIT
+LicenseUrl: https://github.com/Andacbasaran/ClearMic/blob/main/LICENSE
+ShortDescription: "%100 çevrimdışı, 0 MB VRAM yapay zeka mikrofon gürültü engelleyici ve yayın ses stüdyosu."
+Description: >-
+  ClearMic, mekanik klavye, fan ve ortam gürültülerini 0 MB VRAM kullanarak işlemci (CPU)
+  üzerinde GTCRN ONNX yapay zeka modeli ve tam yayın DSP zinciriyle (HPF, Gürültü Kapısı,
+  De-Esser, 3-Bant EQ, Stüdyo Kompresörü, AGC ve ayrık bant vokal havası) gerçek zamanlı temizler.
+ReleaseNotesUrl: https://github.com/Andacbasaran/ClearMic/releases/tag/v1.0.0
+ManifestType: locale
+ManifestVersion: 1.6.0

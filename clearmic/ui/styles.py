@@ -1,288 +1,346 @@
-"""Modern dark QSS theme for ClearMic Pro Audio Studio."""
+"""Studio 2.0 Graphite + Electric Cyan QSS theme for ClearMic v1.0.0."""
 
-DARK_STYLESHEET = """
-QMainWindow, QWidget {
-    background-color: #0B0F17;
-    color: #E6EDF3;
-    font-family: "Segoe UI", "Inter", sans-serif;
-    font-size: 13px;
-}
+from __future__ import annotations
 
-QFrame#Card {
-    background-color: #131924;
-    border: 1px solid #242D3D;
-    border-radius: 12px;
-}
+from clearmic.hardware import get_ui_font_family
 
-QLabel#TitleLabel {
-    font-size: 20px;
+
+def build_studio_stylesheet(ui_font: str | None = None) -> str:
+    font = ui_font or get_ui_font_family()
+    return f"""
+QMainWindow, QWidget#centralWidget, QScrollArea, QWidget#scrollContent {{
+    background-color: #0A0A0C;
+    color: #FAFAFA;
+    font-family: '{font}', 'Segoe UI', 'Inter', -apple-system, sans-serif;
+    font-size: 9pt;
+}}
+
+QLabel {{
+    background-color: transparent;
+    color: #E4E4E7;
+    font-family: '{font}', 'Segoe UI', 'Inter', -apple-system, sans-serif;
+}}
+
+QLabel#SectionTitle {{
+    font-size: 7.4pt;
     font-weight: 700;
-    color: #F8FAFC;
-    letter-spacing: 0.3px;
-}
+    color: #71717A;
+    letter-spacing: 0.7px;
+}}
 
-QLabel#SubtitleLabel {
-    font-size: 12px;
-    color: #8B949E;
-}
+QLabel#MutedLabel {{
+    font-size: 8.2pt;
+    color: #A1A1AA;
+}}
 
-QLabel#SectionTitle {
-    font-size: 12px;
+QLabel#ValueLabel {{
+    font-size: 8.4pt;
     font-weight: 700;
-    color: #94A3B8;
-    letter-spacing: 0.6px;
-}
+    color: #FAFAFA;
+}}
 
-QLabel#MetricPill {
-    background-color: #1B2332;
-    border: 1px solid #2B364A;
-    border-radius: 8px;
-    padding: 4px 10px;
-    font-size: 12px;
-    color: #93C5FD;
-    font-weight: 600;
-}
+QLabel#KeycapLabel {{
+    background-color: #1A1A20;
+    border: 1px solid #2C2C35;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 7.2pt;
+    font-weight: 700;
+    color: #A1A1AA;
+}}
 
-QLabel#BadgeOk {
-    background-color: #0D2B20;
-    border: 1px solid #10B981;
-    border-radius: 7px;
-    padding: 3px 8px;
-    color: #34D399;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-QLabel#BadgeWarn {
-    background-color: #2E210D;
-    border: 1px solid #F59E0B;
-    border-radius: 7px;
-    padding: 3px 8px;
-    color: #FBBF24;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-QLabel#BadgeMuted {
-    background-color: #1C212B;
-    border: 1px solid #2F3746;
-    border-radius: 7px;
-    padding: 3px 8px;
-    color: #8B949E;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-QTabWidget::pane {
-    background-color: #131924;
-    border: 1px solid #242D3D;
-    border-radius: 12px;
-    padding: 8px;
-    margin-top: -1px;
-}
-
-QTabBar::tab {
-    background-color: #0F141E;
-    border: 1px solid #242D3D;
-    border-bottom: none;
-    border-top-left-radius: 9px;
-    border-top-right-radius: 9px;
-    padding: 8px 16px;
-    margin-right: 4px;
-    color: #8B949E;
-    font-weight: 600;
-}
-
-QTabBar::tab:selected {
-    background-color: #131924;
-    color: #34D399;
-    border-color: #2E3B52;
-}
-
-QTabBar::tab:hover:!selected {
-    color: #E2E8F0;
-    background-color: #171E2C;
-}
-
-QComboBox {
-    background-color: #0B0F17;
-    border: 1px solid #2F3746;
-    border-radius: 8px;
-    padding: 6px 10px;
-    color: #E6EDF3;
-    min-height: 20px;
-}
-
-QComboBox:hover {
-    border-color: #3B82F6;
-}
-
-QComboBox::drop-down {
+QFrame#sidebarRail {{
+    background-color: #111113;
     border: none;
-    width: 24px;
-}
+    border-right: 1px solid #222227;
+}}
 
-QComboBox QAbstractItemView {
-    background-color: #131924;
-    border: 1px solid #2F3746;
-    selection-background-color: #1F6FEB;
-    color: #E6EDF3;
-}
+QFrame#studioPanel {{
+    background-color: #141417;
+    border: 1px solid #24242A;
+    border-radius: 10px;
+}}
 
-QPushButton {
-    background-color: #1E2532;
-    border: 1px solid #2F394B;
+QFrame#stagePanel {{
+    background-color: #111114;
+    border: 1px solid #24242A;
+    border-radius: 10px;
+}}
+
+QFrame#sidebarStatusCard {{
+    background-color: #151519;
+    border: 1px solid #24242A;
     border-radius: 8px;
+}}
+
+QLabel#BadgeOk {{
+    background-color: #0B251D;
+    border: 1px solid #10B981;
+    border-radius: 5px;
+    padding: 2px 8px;
+    color: #34D399;
+    font-size: 7.5pt;
+    font-weight: 700;
+}}
+
+QLabel#BadgeCyan {{
+    background-color: #0A242B;
+    border: 1px solid #06B6D4;
+    border-radius: 5px;
+    padding: 2px 8px;
+    color: #22D3EE;
+    font-size: 7.5pt;
+    font-weight: 700;
+}}
+
+QLabel#BadgeWarn {{
+    background-color: #291D0A;
+    border: 1px solid #F59E0B;
+    border-radius: 5px;
+    padding: 2px 8px;
+    color: #FBBF24;
+    font-size: 7.5pt;
+    font-weight: 700;
+}}
+
+QLabel#BadgeDanger {{
+    background-color: #2D0B16;
+    border: 1px solid #E11D48;
+    border-radius: 5px;
+    padding: 2px 8px;
+    color: #FB7185;
+    font-size: 7.5pt;
+    font-weight: 700;
+}}
+
+QLabel#BadgeMuted {{
+    background-color: #1A1A20;
+    border: 1px solid #2A2A32;
+    border-radius: 5px;
+    padding: 2px 8px;
+    color: #A1A1AA;
+    font-size: 7.5pt;
+    font-weight: 700;
+}}
+
+QPushButton {{
+    background-color: #1B1B21;
+    color: #E4E4E7;
+    border: 1px solid #2B2B34;
+    border-radius: 7px;
     padding: 6px 12px;
-    color: #E6EDF3;
+    font-size: 8.5pt;
     font-weight: 600;
-}
+}}
 
-QPushButton:hover {
-    background-color: #283142;
-    border-color: #44526B;
-}
-
-QPushButton:pressed {
-    background-color: #141923;
-}
-
-QPushButton:disabled {
-    color: #566070;
-    background-color: #151A24;
-    border-color: #202735;
-}
-
-QPushButton#PresetButton {
-    background-color: #151C28;
-    border: 1px solid #263042;
-    border-radius: 8px;
-    padding: 6px 11px;
-    color: #CBD5E1;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-QPushButton#PresetButton:hover {
-    border-color: #10B981;
-    color: #F8FAFC;
-}
-
-QPushButton#PresetButton[active="true"] {
-    background-color: #0D2B20;
-    border: 1px solid #10B981;
-    color: #34D399;
-}
-
-QPushButton#PowerButton {
-    background-color: #10B981;
-    border: 1px solid #059669;
-    color: #052E16;
-    font-weight: 700;
-    padding: 8px 18px;
-    border-radius: 10px;
-}
-
-QPushButton#PowerButton:hover {
-    background-color: #34D399;
-}
-
-QPushButton#PowerButton[running="true"] {
-    background-color: #EF4444;
-    border: 1px solid #DC2626;
+QPushButton:hover {{
+    background-color: #23232B;
+    border-color: #3F3F4A;
     color: #FFFFFF;
-}
+}}
 
-QPushButton#PowerButton[running="true"]:hover {
-    background-color: #F87171;
-}
+QPushButton:pressed {{
+    background-color: #151519;
+}}
 
-QPushButton#MuteButton {
-    background-color: #1E2532;
-    border: 1px solid #334155;
-    color: #E2E8F0;
+QPushButton:disabled {{
+    background-color: #121216;
+    color: #52525B;
+    border-color: #1E1E24;
+}}
+
+QPushButton#PrimaryCTA {{
+    background-color: #FAFAFA;
+    color: #09090B;
+    border: 1px solid #FAFAFA;
+    border-radius: 7px;
+    padding: 6px 15px;
+    font-size: 8.8pt;
     font-weight: 700;
-    padding: 8px 13px;
-    border-radius: 10px;
-}
+}}
 
-QPushButton#MuteButton[muted="true"] {
-    background-color: #450A0A;
-    border: 1px solid #EF4444;
-    color: #FCA5A5;
-}
+QPushButton#PrimaryCTA:hover {{
+    background-color: #E4E4E7;
+    border-color: #E4E4E7;
+}}
 
-QPushButton#BypassButton {
-    background-color: #0D2B20;
-    border: 1px solid #10B981;
-    color: #34D399;
+QPushButton#PrimaryCTA[running="true"] {{
+    background-color: #E11D48;
+    color: #FFFFFF;
+    border: 1px solid #F43F5E;
+}}
+
+QPushButton#PrimaryCTA[running="true"]:hover {{
+    background-color: #F43F5E;
+}}
+
+QPushButton#MuteButton {{
+    background-color: #1B1B21;
+    border: 1px solid #2B2B34;
+    color: #E4E4E7;
+    border-radius: 7px;
+    padding: 6px 11px;
+    font-weight: 600;
+}}
+
+QPushButton#MuteButton[muted="true"] {{
+    background-color: #350B18;
+    border: 1px solid #E11D48;
+    color: #FDA4AF;
+}}
+
+QPushButton#BypassButton {{
+    background-color: #09242A;
+    border: 1px solid #06B6D4;
+    color: #22D3EE;
+    border-radius: 7px;
+    padding: 6px 11px;
     font-weight: 700;
-    padding: 6px 13px;
-    border-radius: 8px;
-    font-size: 12px;
-}
+}}
 
-QPushButton#BypassButton[bypass="true"] {
-    background-color: #3A2508;
+QPushButton#BypassButton[bypass="true"] {{
+    background-color: #2B1F0A;
     border: 1px solid #F59E0B;
     color: #FCD34D;
-}
+}}
 
-QCheckBox {
-    spacing: 8px;
-    color: #E6EDF3;
+QPushButton#SegmentedBtn {{
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    padding: 3px 9px;
+    color: #71717A;
+    font-size: 7.8pt;
+    font-weight: 600;
+}}
+
+QPushButton#SegmentedBtn:hover {{
+    color: #E4E4E7;
+}}
+
+QPushButton#SegmentedBtn[active="true"] {{
+    background-color: #1F1F26;
+    border: 1px solid #2E2E38;
+    color: #22D3EE;
+}}
+
+QPushButton#PresetChip {{
+    background-color: #18181D;
+    border: 1px solid #26262F;
+    border-radius: 7px;
+    padding: 5px 11px;
+    color: #A1A1AA;
+    font-size: 8.2pt;
+    font-weight: 600;
+}}
+
+QPushButton#PresetChip:hover {{
+    border-color: #3F3F4A;
+    color: #FAFAFA;
+}}
+
+QPushButton#PresetChip[active="true"] {{
+    background-color: #092329;
+    border: 1px solid #06B6D4;
+    color: #22D3EE;
+}}
+
+QComboBox {{
+    background-color: #141417;
+    border: 1px solid #26262E;
+    border-radius: 7px;
+    padding: 5px 24px 5px 10px;
+    min-height: 20px;
+    color: #FAFAFA;
+    font-size: 8.5pt;
     font-weight: 500;
-}
+}}
 
-QCheckBox::indicator {
-    width: 17px;
-    height: 17px;
-    border-radius: 5px;
-    border: 1px solid #3B475C;
-    background-color: #0B0F17;
-}
+QComboBox:hover {{
+    border-color: #3F3F4A;
+    background-color: #1A1A20;
+}}
 
-QCheckBox::indicator:checked {
-    background-color: #10B981;
-    border-color: #10B981;
-}
+QComboBox::drop-down {{
+    border: none;
+    width: 22px;
+}}
 
-QSlider::groove:horizontal {
-    height: 6px;
-    background: #1E2634;
-    border-radius: 3px;
-}
+QComboBox QAbstractItemView {{
+    background-color: #16161A;
+    color: #F4F4F5;
+    selection-background-color: #0A2E36;
+    selection-color: #FFFFFF;
+    border: 1px solid #32323C;
+    outline: none;
+    padding: 4px;
+}}
 
-QSlider::sub-page:horizontal {
-    background: #10B981;
-    border-radius: 3px;
-}
+QSlider {{
+    background-color: transparent;
+}}
 
-QSlider::handle:horizontal {
-    background: #F8FAFC;
-    border: 2px solid #10B981;
-    width: 14px;
-    height: 14px;
+QSlider::groove:horizontal {{
+    border: none;
+    height: 3px;
+    background: #27272E;
+    border-radius: 1px;
+}}
+
+QSlider::sub-page:horizontal {{
+    background: #06B6D4;
+    border-radius: 1px;
+}}
+
+QSlider::handle:horizontal {{
+    background: #FAFAFA;
+    border: 1px solid #09090B;
+    width: 12px;
+    height: 12px;
     margin: -5px 0;
-    border-radius: 8px;
-}
-
-QSlider::handle:horizontal:hover {
-    background: #FFFFFF;
-}
-
-QProgressBar {
-    background-color: #0B0F17;
-    border: 1px solid #263042;
     border-radius: 6px;
-    text-align: center;
-    color: #E2E8F0;
-    height: 16px;
-    font-size: 11px;
-}
+}}
 
-QProgressBar::chunk {
-    background-color: #10B981;
+QSlider::handle:horizontal:hover {{
+    background: #22D3EE;
+}}
+
+QProgressBar {{
+    background-color: #18181D;
+    border: 1px solid #24242A;
     border-radius: 5px;
-}
+    text-align: center;
+    color: #FAFAFA;
+    height: 18px;
+    font-size: 7.8pt;
+    font-weight: 600;
+}}
+
+QProgressBar::chunk {{
+    background-color: #0E4F5E;
+    border-radius: 4px;
+}}
+
+QScrollBar:vertical {{
+    background: transparent;
+    width: 5px;
+    margin: 2px 0;
+}}
+
+QScrollBar::handle:vertical {{
+    background: #2A2A32;
+    border-radius: 2px;
+    min-height: 24px;
+}}
+
+QScrollBar::handle:vertical:hover {{
+    background: #52525E;
+}}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
+    height: 0px;
+}}
 """
+
+
+DARK_STYLESHEET = build_studio_stylesheet()

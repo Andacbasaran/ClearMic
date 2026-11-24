@@ -1,6 +1,7 @@
 """Tests for DSP blocks: HighPassFilter, NoiseGate, AGC, SoftLimiter."""
 
 import numpy as np
+
 from clearmic.audio.dsp import (
     AutomaticGainControl,
     HighPassFilter,

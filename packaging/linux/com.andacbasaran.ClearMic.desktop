@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=ClearMic
+GenericName=AI Microphone Noise Suppressor & Voice Studio
+Comment=100% offline, 0 MB VRAM real-time AI microphone noise suppressor & broadcast voice studio
+Comment[tr]=%100 çevrimdışı, 0 MB VRAM gerçek zamanlı yapay zeka mikrofon gürültü engelleyici ve yayın ses stüdyosu
+Exec=ClearMic
+Icon=clearmic
+Terminal=false
+Categories=AudioVideo;Audio;Utility;
+Keywords=microphone;noise;suppression;dsp;voice;discord;obs;podcast;offline;ai;
+StartupWMClass=ClearMic
+StartupNotify=true

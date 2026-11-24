@@ -1,19 +1,21 @@
-"""Persistent JSON configuration for ClearMic."""
+"""Persistent OS-native JSON configuration for ClearMic."""
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 import json
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
-
-def default_config_dir() -> Path:
-    """Return user config directory (AppData/Roaming/ClearMic on Windows)."""
-    return Path.home() / "AppData" / "Roaming" / "ClearMic"
+from clearmic.hardware import get_os_config_dir
 
 
-def default_config_path() -> Path:
-    return default_config_dir() / "config.json"
+def default_config_dir(platform_name: str | None = None) -> Path:
+    """Return OS-native config directory (%APPDATA%/ClearMic, ~/Library/Application Support/ClearMic, or ~/.config/clearmic)."""
+    return get_os_config_dir(platform_name=platform_name)
+
+
+def default_config_path(platform_name: str | None = None) -> Path:
+    return default_config_dir(platform_name=platform_name) / "config.json"
 
 
 @dataclass
@@ -30,6 +32,7 @@ class ClearMicConfig:
     active_preset: str = "gaming_discord"
     denoiser_engine: str = "gtcrn_onnx"  # "gtcrn_onnx" | "spectral"
     denoise_strength: float = 0.92  # 0.0 (dry) .. 1.0 (full wet)
+    preserve_air: bool = True  # Split-band 7.2-20 kHz vocal air preservation
 
     # Pre-filter & Gate
     highpass_enabled: bool = True
@@ -46,9 +49,9 @@ class ClearMicConfig:
     deesser_amount: float = 0.45  # 0.0 .. 1.0
 
     eq_enabled: bool = True
-    eq_low_db: float = 0.5    # 120 Hz shelf (-6..+6 dB)
-    eq_mid_db: float = 2.0    # 2800 Hz presence (-6..+6 dB)
-    eq_high_db: float = 1.0   # 8000 Hz air shelf (-6..+6 dB)
+    eq_low_db: float = 0.5   # 120 Hz shelf (-6..+6 dB)
+    eq_mid_db: float = 2.0   # 2800 Hz presence (-6..+6 dB)
+    eq_high_db: float = 1.0  # 8000 Hz air shelf (-6..+6 dB)
 
     compressor_enabled: bool = True
     compressor_threshold_db: float = -20.0
@@ -62,17 +65,21 @@ class ClearMicConfig:
     output_gain_db: float = 0.0
 
     # UI & App behavior
-    visualizer_mode: str = "spectrum"  # "waveform" | "spectrum"
+    visualizer_mode: str = "spectrum"  # "spectrum" | "waveform" | "spectrogram"
+    ui_language: str = "en"  # "en" | "tr"
     minimize_to_tray: bool = True
     auto_start_engine: bool = True
+    check_updates_on_startup: bool = True
 
     def save(self, path: Path | None = None) -> None:
         target = path or default_config_path()
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(
+        tmp = target.with_suffix(".json.tmp")
+        tmp.write_text(
             json.dumps(asdict(self), indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
+        tmp.replace(target)
 
     @classmethod
     def load(cls, path: Path | None = None) -> ClearMicConfig:
@@ -81,6 +88,8 @@ class ClearMicConfig:
             return cls()
         try:
             raw = json.loads(target.read_text(encoding="utf-8"))
+            if not isinstance(raw, dict):
+                return cls()
             valid_fields = {f.name for f in cls.__dataclass_fields__.values()}
             filtered = {k: v for k, v in raw.items() if k in valid_fields}
             return cls(**filtered)

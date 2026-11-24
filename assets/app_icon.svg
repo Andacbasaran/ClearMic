@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Matte Obsidian Flat Tile -->
+  <rect x="12" y="12" width="488" height="488" rx="114" fill="#111114" stroke="#27272E" stroke-width="6"/>
+
+  <!-- Symmetrical Clean Acoustic Wave Bars (Electric Cyan) -->
+  <rect x="88" y="206" width="24" height="100" rx="12" fill="#06B6D4"/>
+  <rect x="132" y="158" width="24" height="196" rx="12" fill="#06B6D4"/>
+  <rect x="356" y="158" width="24" height="196" rx="12" fill="#06B6D4"/>
+  <rect x="400" y="206" width="24" height="100" rx="12" fill="#06B6D4"/>
+
+  <!-- Studio Microphone Capsule -->
+  <rect x="212" y="114" width="88" height="164" rx="44" fill="#FAFAFA"/>
+  <rect x="234" y="160" width="44" height="10" rx="5" fill="#111114"/>
+  <rect x="234" y="186" width="44" height="10" rx="5" fill="#111114"/>
+
+  <!-- Microphone Cradle Arc & Stand -->
+  <g fill="none" stroke="#FAFAFA" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 180 247 A 76 73 0 0 0 332 247"/>
+    <line x1="256" y1="320" x2="256" y2="382"/>
+    <line x1="204" y1="382" x2="308" y2="382"/>
+  </g>
+</svg>
