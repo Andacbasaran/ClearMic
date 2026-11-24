@@ -92,12 +92,13 @@ def test_engine_negotiate_stereo_and_adaptive_sample_rate() -> None:
         if samplerate == 48000:
             raise RuntimeError("48 kHz unsupported on test sink")
 
-    with (
-        patch("clearmic.audio.engine.sd.query_hostapis", return_value=fake_hostapis),
-        patch("clearmic.audio.engine.sd.query_devices", side_effect=fake_query_devices),
-        patch("clearmic.audio.engine.sd.check_input_settings", side_effect=fake_check_input),
-        patch("clearmic.audio.engine.sd.check_output_settings", side_effect=fake_check_output),
-    ):
+    fake_sd = SimpleNamespace(
+        query_hostapis=lambda: fake_hostapis,
+        query_devices=fake_query_devices,
+        check_input_settings=fake_check_input,
+        check_output_settings=fake_check_output,
+    )
+    with patch("clearmic.audio.engine.sd", fake_sd):
         sr, out_ch, cross_ha, ha_label = engine._negotiate_stream_params(0, 1)
 
     assert sr == 44100
@@ -326,10 +327,11 @@ def test_list_audio_devices_deduplication_and_linux_virtual_mic_creation() -> No
         },
     ]
 
-    with (
-        patch("clearmic.audio.devices.sd.query_hostapis", return_value=fake_hostapis),
-        patch("clearmic.audio.devices.sd.query_devices", return_value=fake_raw_devices),
-    ):
+    fake_sd = SimpleNamespace(
+        query_hostapis=lambda: fake_hostapis,
+        query_devices=lambda: fake_raw_devices,
+    )
+    with patch("clearmic.audio.devices.sd", fake_sd):
         inputs, outputs = list_audio_devices(platform_name="win32")
 
     # Duplicate USB Mic should resolve to WASAPI (index 1), not MME
