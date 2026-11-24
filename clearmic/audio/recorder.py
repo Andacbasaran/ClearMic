@@ -6,8 +6,12 @@ import threading
 from pathlib import Path
 
 import numpy as np
-import sounddevice as sd
 from scipy.io import wavfile
+
+try:
+    import sounddevice as sd
+except Exception:  # pragma: no cover - headless environments without PulseAudio/PortAudio
+    sd = None  # type: ignore[assignment]
 
 
 def _negotiate_playback_channels(device_index: int | None) -> int:

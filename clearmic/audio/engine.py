@@ -9,7 +9,11 @@ from collections import deque
 from dataclasses import dataclass
 
 import numpy as np
-import sounddevice as sd
+
+try:
+    import sounddevice as sd
+except Exception:  # pragma: no cover - headless environments without PulseAudio/PortAudio
+    sd = None  # type: ignore[assignment]
 
 from clearmic.audio.denoiser import (
     BaseDenoiser,

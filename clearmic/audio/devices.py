@@ -7,7 +7,10 @@ import subprocess
 import sys
 from dataclasses import dataclass
 
-import sounddevice as sd
+try:
+    import sounddevice as sd
+except Exception:  # pragma: no cover - headless environments without PulseAudio/PortAudio
+    sd = None  # type: ignore[assignment]
 
 VIRTUAL_MIC_HINTS_WINDOWS = (
     "cable input",
