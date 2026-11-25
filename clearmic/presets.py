@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import json
+import os
 import re
+import tempfile
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -166,32 +168,97 @@ def load_custom_presets(path: Path | None = None) -> list[AudioPreset]:
         return []
     try:
         raw = json.loads(target.read_text(encoding="utf-8"))
-        if not isinstance(raw, list):
-            return []
-        valid_fields = {f.name for f in AudioPreset.__dataclass_fields__.values()}
-        result: list[AudioPreset] = []
-        for item in raw:
-            if not isinstance(item, dict) or not item.get("id") or not item.get("name"):
-                continue
+    except Exception:
+        return []
+    if not isinstance(raw, list):
+        return []
+
+    valid_fields = {f.name for f in AudioPreset.__dataclass_fields__.values()}
+    result: list[AudioPreset] = []
+    seen_ids: set[str] = set()
+    for item in raw:
+        if not isinstance(item, dict) or not item.get("id") or not item.get("name"):
+            continue
+        try:
             filtered = {k: v for k, v in item.items() if k in valid_fields}
+            pid = str(filtered["id"]).strip()
+            pname = str(filtered["name"]).strip()
+            if not pid or not pname or pid in seen_ids:
+                continue
+            filtered["id"] = pid
+            filtered["name"] = pname
             filtered["is_custom"] = True
             filtered.setdefault("preserve_air", True)
             filtered.setdefault("description", "Custom user preset")
-            result.append(AudioPreset(**filtered))
-        return result
-    except Exception:
-        return []
+            preset = AudioPreset(
+                id=pid,
+                name=pname,
+                description=str(filtered["description"]),
+                denoise_strength=max(0.0, min(1.0, float(filtered["denoise_strength"]))),
+                highpass_enabled=bool(filtered["highpass_enabled"]),
+                highpass_cutoff_hz=max(20.0, min(500.0, float(filtered["highpass_cutoff_hz"]))),
+                noise_gate_enabled=bool(filtered["noise_gate_enabled"]),
+                noise_gate_threshold_db=max(
+                    -80.0, min(0.0, float(filtered["noise_gate_threshold_db"]))
+                ),
+                agc_enabled=bool(filtered["agc_enabled"]),
+                agc_target_db=max(-40.0, min(-1.0, float(filtered["agc_target_db"]))),
+                compressor_enabled=bool(filtered["compressor_enabled"]),
+                compressor_threshold_db=max(
+                    -60.0, min(0.0, float(filtered["compressor_threshold_db"]))
+                ),
+                compressor_ratio=max(1.0, min(20.0, float(filtered["compressor_ratio"]))),
+                deesser_enabled=bool(filtered["deesser_enabled"]),
+                deesser_amount=max(0.0, min(1.0, float(filtered["deesser_amount"]))),
+                eq_enabled=bool(filtered["eq_enabled"]),
+                eq_low_db=max(-12.0, min(12.0, float(filtered["eq_low_db"]))),
+                eq_mid_db=max(-12.0, min(12.0, float(filtered["eq_mid_db"]))),
+                eq_high_db=max(-12.0, min(12.0, float(filtered["eq_high_db"]))),
+                preserve_air=bool(filtered["preserve_air"]),
+                is_custom=True,
+            )
+            seen_ids.add(pid)
+            result.append(preset)
+        except Exception:
+            continue
+    return result
 
 
 def _write_custom_presets(presets: list[AudioPreset], path: Path | None = None) -> None:
     target = path or default_custom_presets_path()
     target.parent.mkdir(parents=True, exist_ok=True)
-    tmp = target.with_suffix(".json.tmp")
-    tmp.write_text(
-        json.dumps([asdict(p) for p in presets], indent=2, ensure_ascii=False),
-        encoding="utf-8",
+    payload = json.dumps([asdict(p) for p in presets], indent=2, ensure_ascii=False).encode(
+        "utf-8"
     )
-    tmp.replace(target)
+    tmp_path: Path | None = None
+    try:
+        fd, tmp_name = tempfile.mkstemp(
+            prefix=f".{target.stem}_",
+            suffix=".tmp",
+            dir=str(target.parent),
+        )
+        tmp_path = Path(tmp_name)
+        fd_owned = True
+        try:
+            if os.name == "posix":
+                os.fchmod(fd, 0o600)
+            fd_owned = False
+            with os.fdopen(fd, "wb") as f:
+                f.write(payload)
+                f.flush()
+                os.fsync(f.fileno())
+        except Exception:
+            if fd_owned:
+                try:
+                    os.close(fd)
+                except OSError:
+                    pass
+            raise
+        os.replace(tmp_path, target)
+        tmp_path = None
+    finally:
+        if tmp_path is not None:
+            tmp_path.unlink(missing_ok=True)
 
 
 def save_custom_preset(
@@ -203,7 +270,20 @@ def save_custom_preset(
     clean_name = name.strip()
     if not clean_name:
         raise ValueError("Preset name cannot be empty")
-    pid = _slugify_preset_id(clean_name)
+    existing = load_custom_presets(path)
+    same_name = next((p for p in existing if p.name.casefold() == clean_name.casefold()), None)
+    if same_name is not None:
+        pid = same_name.id
+        existing = [p for p in existing if p.id != pid]
+    else:
+        base_pid = _slugify_preset_id(clean_name)
+        used_ids = {p.id for p in existing} | set(PRESETS_BY_ID.keys())
+        pid = base_pid
+        suffix = 2
+        while pid in used_ids:
+            pid = f"{base_pid}_{suffix}"
+            suffix += 1
+
     preset = AudioPreset(
         id=pid,
         name=clean_name,
@@ -227,7 +307,6 @@ def save_custom_preset(
         preserve_air=bool(config.preserve_air),
         is_custom=True,
     )
-    existing = [p for p in load_custom_presets(path) if p.id != pid]
     existing.append(preset)
     _write_custom_presets(existing, path)
     return preset

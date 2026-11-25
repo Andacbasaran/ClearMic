@@ -6,7 +6,7 @@ from __future__ import annotations
 import threading
 import time
 from collections import deque
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 import numpy as np
 
@@ -19,6 +19,7 @@ from clearmic.audio.denoiser import (
     BaseDenoiser,
     GTCRNOnnxDenoiser,
     SpectralFallbackDenoiser,
+    _DelayLine,
 )
 from clearmic.audio.dsp import (
     AutomaticGainControl,
@@ -238,7 +239,7 @@ class AudioEngine:
     SPECTROGRAM_SLICES = 64
 
     def __init__(self, config: ClearMicConfig) -> None:
-        self._config = config
+        self._config = replace(config)
         self._lock = threading.Lock()
         self._stream: sd.Stream | None = None
         self._in_stream: sd.InputStream | None = None
@@ -253,38 +254,40 @@ class AudioEngine:
         self._last_error = ""
         self._xruns = 0
 
-        self._sample_rate = int(config.sample_rate or 48000)
+        self._sample_rate = int(self._config.sample_rate or 48000)
         self._block_size = self._block_size_for_sr(self._sample_rate)
         self._spectrum_analyzer = _LogSpectrumAnalyzer(
             self._block_size, self.SPECTRUM_BANDS, self._sample_rate
         )
 
-        self._highpass = HighPassFilter(self._sample_rate, config.highpass_cutoff_hz)
+        self._highpass = HighPassFilter(self._sample_rate, self._config.highpass_cutoff_hz)
         self._gate = NoiseGate(
             sample_rate=self._sample_rate,
-            threshold_db=config.noise_gate_threshold_db,
-            attack_ms=config.noise_gate_attack_ms,
-            hold_ms=config.noise_gate_hold_ms,
-            release_ms=config.noise_gate_release_ms,
+            threshold_db=self._config.noise_gate_threshold_db,
+            attack_ms=self._config.noise_gate_attack_ms,
+            hold_ms=self._config.noise_gate_hold_ms,
+            release_ms=self._config.noise_gate_release_ms,
         )
-        self._deesser = DeEsser(self._sample_rate, amount=config.deesser_amount)
+        self._deesser = DeEsser(self._sample_rate, amount=self._config.deesser_amount)
         self._eq = VoiceEqualizer3Band(
             self._sample_rate,
-            low_db=config.eq_low_db,
-            mid_db=config.eq_mid_db,
-            high_db=config.eq_high_db,
+            low_db=self._config.eq_low_db,
+            mid_db=self._config.eq_mid_db,
+            high_db=self._config.eq_high_db,
         )
         self._compressor = StudioCompressor(
             self._sample_rate,
-            threshold_db=config.compressor_threshold_db,
-            ratio=config.compressor_ratio,
+            threshold_db=self._config.compressor_threshold_db,
+            ratio=self._config.compressor_ratio,
         )
         self._agc = AutomaticGainControl(
             sample_rate=self._sample_rate,
-            target_db=config.agc_target_db,
-            max_gain_db=config.agc_max_gain_db,
+            target_db=self._config.agc_target_db,
+            max_gain_db=self._config.agc_max_gain_db,
         )
         self._denoiser: BaseDenoiser = SpectralFallbackDenoiser(self._sample_rate)
+        self._loaded_denoiser_engine: str = ""
+        self._rec_raw_delay = _DelayLine(getattr(self._denoiser, "latency_samples", 0))
         self.recorder = ABTestRecorder(sample_rate=self._sample_rate, max_seconds=6.0)
 
         # Telemetry state
@@ -306,6 +309,7 @@ class AudioEngine:
         self._cal_chunks: list[np.ndarray] = []
         self._cal_collected = 0
         self._cal_target_samples = 0
+        self._cal_pending: tuple[list[np.ndarray], int, int] | None = None
         self._last_calibration: CalibrationResult | None = None
 
         self.reload_denoiser()
@@ -346,6 +350,7 @@ class AudioEngine:
             self._cal_chunks.clear()
             self._cal_collected = 0
             self._cal_target_samples = max(1, int(self._sample_rate * max(0.5, duration_sec)))
+            self._cal_pending = None
             self._last_calibration = None
             self._calibrating = True
 
@@ -354,41 +359,58 @@ class AudioEngine:
             self._calibrating = False
             self._cal_chunks.clear()
             self._cal_collected = 0
+            self._cal_pending = None
 
     def consume_calibration_result(self) -> CalibrationResult | None:
+        pending: tuple[list[np.ndarray], int, int] | None = None
         with self._lock:
-            res = self._last_calibration
-            self._last_calibration = None
-            return res
+            if self._last_calibration is not None:
+                res = self._last_calibration
+                self._last_calibration = None
+                return res
+            if self._cal_pending is not None:
+                pending = self._cal_pending
+                self._cal_pending = None
+        if pending is not None:
+            chunks, sr, target = pending
+            captured = (
+                np.concatenate(chunks)[:target]
+                if chunks
+                else np.zeros(0, dtype=np.float32)
+            )
+            return analyze_room_noise(captured, sr)
+        return None
 
     def update_config(self, config: ClearMicConfig) -> None:
         with self._lock:
-            engine_changed = config.denoiser_engine != self._config.denoiser_engine
-            self._config = config
-            self._highpass.configure(self._sample_rate, config.highpass_cutoff_hz)
-            self._gate.threshold_db = config.noise_gate_threshold_db
-            self._gate.attack_ms = config.noise_gate_attack_ms
-            self._gate.hold_ms = config.noise_gate_hold_ms
-            self._gate.release_ms = config.noise_gate_release_ms
-            self._deesser.configure(self._sample_rate, config.deesser_amount)
+            snapshot = replace(config)
+            engine_changed = snapshot.denoiser_engine != self._loaded_denoiser_engine
+            self._config = snapshot
+            self._highpass.configure(self._sample_rate, snapshot.highpass_cutoff_hz)
+            self._gate.threshold_db = snapshot.noise_gate_threshold_db
+            self._gate.attack_ms = snapshot.noise_gate_attack_ms
+            self._gate.hold_ms = snapshot.noise_gate_hold_ms
+            self._gate.release_ms = snapshot.noise_gate_release_ms
+            self._deesser.configure(self._sample_rate, snapshot.deesser_amount)
             self._eq.configure(
                 self._sample_rate,
-                config.eq_low_db,
-                config.eq_mid_db,
-                config.eq_high_db,
+                snapshot.eq_low_db,
+                snapshot.eq_mid_db,
+                snapshot.eq_high_db,
             )
-            self._compressor.threshold_db = config.compressor_threshold_db
-            self._compressor.ratio = config.compressor_ratio
-            self._agc.target_db = config.agc_target_db
-            self._agc.max_gain_db = config.agc_max_gain_db
+            self._compressor.threshold_db = snapshot.compressor_threshold_db
+            self._compressor.ratio = max(1.0, snapshot.compressor_ratio)
+            self._agc.target_db = snapshot.agc_target_db
+            self._agc.max_gain_db = snapshot.agc_max_gain_db
 
         if engine_changed:
             self.reload_denoiser()
 
     def reload_denoiser(self) -> str:
         """Load the configured denoiser (falls back to Spectral DSP if ONNX model is missing)."""
-        desired = self._config.denoiser_engine
-        sr = self._sample_rate
+        with self._lock:
+            desired = self._config.denoiser_engine
+            sr = self._sample_rate
         new_denoiser: BaseDenoiser
 
         if desired == "gtcrn_onnx" and is_model_available(GTCRN_MODEL):
@@ -402,6 +424,8 @@ class AudioEngine:
 
         with self._lock:
             self._denoiser = new_denoiser
+            self._loaded_denoiser_engine = desired
+            self._rec_raw_delay = _DelayLine(getattr(new_denoiser, "latency_samples", 0))
         return new_denoiser.name
 
     def _query_device_meta(
@@ -502,12 +526,16 @@ class AudioEngine:
             self._agc.sample_rate = self._sample_rate
             self._agc.reset()
             self._denoiser.reset()
+            self._rec_raw_delay.reset()
 
         if sr_changed:
             self.reload_denoiser()
 
     def start(self, input_device_index: int | None, output_device_index: int | None) -> None:
         self.stop()
+        if sd is None:
+            self._last_error = "PortAudio / sounddevice is not available in this environment."
+            raise RuntimeError(self._last_error)
         self._last_error = ""
         self._xruns = 0
 
@@ -616,6 +644,7 @@ class AudioEngine:
     def stop(self) -> None:
         self._running = False
         self.recorder.stop_recording()
+        self.recorder.stop_playback()
         self.cancel_room_calibration()
 
         for attr in ("_stream", "_in_stream", "_out_stream"):
@@ -631,19 +660,25 @@ class AudioEngine:
         with self._bridge_lock:
             self._bridge_queue.clear()
 
-        self._input_db = -80.0
-        self._output_db = -80.0
-        self._nr_db = 0.0
-        self._raw_wave.fill(0.0)
-        self._clean_wave.fill(0.0)
-        self._raw_spec.fill(0.0)
-        self._clean_spec.fill(0.0)
-        self._spectrogram.fill(0.0)
+        with self._lock:
+            self._input_db = -80.0
+            self._output_db = -80.0
+            self._nr_db = 0.0
+            self._raw_wave.fill(0.0)
+            self._clean_wave.fill(0.0)
+            self._raw_spec.fill(0.0)
+            self._clean_spec.fill(0.0)
+            self._spectrogram.fill(0.0)
+            self._rec_raw_delay.reset()
 
     def process_block(self, raw_mono: np.ndarray) -> np.ndarray:
         """Run the full ClearMic DSP & AI chain on one mono float32 block and update live telemetry."""
         t0 = time.perf_counter()
         raw = raw_mono.astype(np.float32, copy=True)
+        if not np.all(np.isfinite(raw)):
+            raw = np.nan_to_num(raw, nan=0.0, posinf=1.0, neginf=-1.0).astype(
+                np.float32, copy=False
+            )
         frames = raw.size
 
         with self._lock:
@@ -652,15 +687,20 @@ class AudioEngine:
             if abs(in_gain - 1.0) > 1e-4:
                 raw *= np.float32(in_gain)
 
-            # Room auto-calibrate capture (raw pre-DSP room floor)
+            # Room auto-calibrate capture (raw pre-DSP room floor; FFT deferred off RT callback)
             if self._calibrating:
                 self._cal_chunks.append(raw.copy())
                 self._cal_collected += frames
                 if self._cal_collected >= self._cal_target_samples:
-                    captured = np.concatenate(self._cal_chunks)[: self._cal_target_samples]
+                    self._cal_pending = (
+                        list(self._cal_chunks),
+                        self._sample_rate,
+                        self._cal_target_samples,
+                    )
                     self._cal_chunks.clear()
                     self._calibrating = False
-                    self._last_calibration = analyze_room_noise(captured, self._sample_rate)
+
+            raw_delayed = self._rec_raw_delay.push_and_read(raw)
 
             in_db = rms_db(raw)
             nr_instant = 0.0
@@ -668,9 +708,11 @@ class AudioEngine:
             if cfg.muted:
                 processed = np.zeros_like(raw)
                 clean_for_rec = processed
+                raw_for_rec = raw
             elif not cfg.enabled or cfg.bypass_ab:
                 processed = soft_limit(raw)
                 clean_for_rec = processed
+                raw_for_rec = raw
             else:
                 sig = raw
                 if cfg.highpass_enabled:
@@ -706,9 +748,10 @@ class AudioEngine:
 
                 processed = soft_limit(sig)
                 clean_for_rec = processed
+                raw_for_rec = raw_delayed
 
             if self.recorder.is_recording:
-                self.recorder.feed(raw, clean_for_rec)
+                self.recorder.feed(raw_for_rec, clean_for_rec)
 
             out_db = rms_db(processed)
             elapsed_ms = (time.perf_counter() - t0) * 1000.0

@@ -5,13 +5,14 @@ from __future__ import annotations
 import hashlib
 import ssl
 import sys
+import tempfile
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
 from clearmic import __version__
-from clearmic.hardware import get_app_base_dir, get_writable_data_dir
+from clearmic.hardware import get_app_base_dir, get_os_config_dir, get_writable_data_dir
 
 
 @dataclass(frozen=True)
@@ -55,9 +56,9 @@ def compute_sha256(path: Path) -> str:
 
 def verify_model_file(path: Path, spec: ModelSpec = GTCRN_MODEL) -> bool:
     """Verify file existence, minimum size, and optional SHA-256 digest."""
-    if not path.is_file():
-        return False
     try:
+        if not path.is_file():
+            return False
         if path.stat().st_size < spec.expected_min_bytes:
             return False
         if spec.sha256:
@@ -68,36 +69,61 @@ def verify_model_file(path: Path, spec: ModelSpec = GTCRN_MODEL) -> bool:
 
 
 def get_models_dir(data_dir: Path | None = None) -> Path:
-    """Return writable OS-native models directory under ClearMic's data dir."""
+    """Return writable OS-native models directory under ClearMic's data dir (creates dir on demand)."""
     root = Path(data_dir) if data_dir is not None else get_writable_data_dir()
     models_dir = root / "models"
     models_dir.mkdir(parents=True, exist_ok=True)
     return models_dir
 
 
-def get_model_path(spec: ModelSpec = GTCRN_MODEL, data_dir: Path | None = None) -> Path:
-    """Resolve model path: checks frozen bundle, OS data dir, then repo-local models/ fallback."""
+def find_model_path(spec: ModelSpec = GTCRN_MODEL, data_dir: Path | None = None) -> Path | None:
+    """Pure read-only lookup for an existing verified model file.
+
+    Never creates directories or write-probe files. Checks:
+    1. Frozen PyInstaller bundle (`sys._MEIPASS/models`)
+    2. Explicit `data_dir/models` (if provided) or OS-native user data dir / fallback dirs
+    3. Repository-local `models/` directory
+    """
+    candidates: list[Path] = []
+
     if getattr(sys, "frozen", False):
         meipass = getattr(sys, "_MEIPASS", "")
         if meipass:
-            bundled = Path(meipass) / "models" / spec.filename
-            if verify_model_file(bundled, spec):
-                return bundled
+            candidates.append(Path(meipass) / "models" / spec.filename)
 
-    primary = get_models_dir(data_dir=data_dir) / spec.filename
-    if verify_model_file(primary, spec):
-        return primary
+    if data_dir is not None:
+        candidates.append(Path(data_dir) / "models" / spec.filename)
+    else:
+        candidates.append(get_os_config_dir() / "models" / spec.filename)
+        try:
+            candidates.append(Path.home() / ".clearmic" / "models" / spec.filename)
+        except Exception:
+            pass
+        candidates.append(Path(tempfile.gettempdir()) / "clearmic" / "models" / spec.filename)
 
-    repo_fallback = get_app_base_dir() / "models" / spec.filename
-    if verify_model_file(repo_fallback, spec):
-        return repo_fallback
+    candidates.append(get_app_base_dir() / "models" / spec.filename)
 
-    return primary
+    seen: set[Path] = set()
+    for candidate in candidates:
+        if candidate in seen:
+            continue
+        seen.add(candidate)
+        if verify_model_file(candidate, spec):
+            return candidate
+    return None
+
+
+def get_model_path(spec: ModelSpec = GTCRN_MODEL, data_dir: Path | None = None) -> Path:
+    """Resolve model path read-only without creating directories or probe files."""
+    found = find_model_path(spec, data_dir=data_dir)
+    if found is not None:
+        return found
+    base = Path(data_dir) if data_dir is not None else get_os_config_dir()
+    return base / "models" / spec.filename
 
 
 def is_model_available(spec: ModelSpec = GTCRN_MODEL, data_dir: Path | None = None) -> bool:
-    path = get_model_path(spec, data_dir=data_dir)
-    return verify_model_file(path, spec)
+    return find_model_path(spec, data_dir=data_dir) is not None
 
 
 def download_model(
@@ -109,8 +135,8 @@ def download_model(
     cancel_check: Callable[[], bool] | None = None,
 ) -> Path:
     """Download ONNX model atomically via `.part` temp file with certifi SSL, timeout & SHA-256 check."""
-    existing = get_model_path(spec, data_dir=data_dir)
-    if verify_model_file(existing, spec):
+    existing = find_model_path(spec, data_dir=data_dir)
+    if existing is not None:
         if progress_callback:
             size = existing.stat().st_size
             progress_callback(size, size)

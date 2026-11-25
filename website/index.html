@@ -1804,17 +1804,40 @@
       }
     }
 
-    @media (max-width: 860px) {
+    @media (max-height: 720px) {
+      #scene-0,
+      #scene-1,
       #scene-2 {
         overflow-y: auto;
+        overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
         justify-content: flex-start;
         padding-top: 72px;
-        padding-bottom: 84px;
+        padding-bottom: 108px;
+      }
+    }
+
+    @media (max-width: 860px) {
+      #scene-1,
+      #scene-2 {
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        justify-content: flex-start;
+        padding-top: 72px;
+        padding-bottom: 108px;
+      }
+
+      .demo-card,
+      .studio-perspective,
+      .studio-frame {
+        min-width: 0;
+        max-width: 100%;
       }
 
       .studio-showcase {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
+        width: 100%;
         max-width: 560px;
         gap: 10px;
         margin-bottom: 12px;
@@ -1915,9 +1938,10 @@
       #scene-1,
       #scene-2 {
         overflow-y: auto;
+        overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
         justify-content: flex-start;
-        padding: 66px 14px 82px;
+        padding: 66px 14px 108px;
       }
 
       #scene-2 .eyebrow {
@@ -2254,7 +2278,7 @@
               </div>
             </div>
 
-            <div class="hotspot-callout" id="hotspot-callout">
+            <div class="hotspot-callout" id="hotspot-callout" aria-live="polite">
               <div class="hotspot-callout-main">
                 <span class="hotspot-callout-badge" id="callout-num">1</span>
                 <span><strong id="callout-title">Canlı Çift Katmanlı FFT Spektrum:</strong> <span id="callout-desc">Turuncu ham gürültü katmanı ile elektrik camgöbeği temiz sesi gerçek zamanlı izle — ortalama -47.0 dB gürültü düşüşü.</span></span>
@@ -2342,7 +2366,7 @@
   <!-- Native Fullscreen Studio Lightbox -->
   <dialog id="studio-lightbox" class="studio-lightbox" closedby="any" aria-labelledby="lightbox-title">
     <div class="lightbox-bar">
-      <h1 class="lightbox-title" id="lightbox-title">ClearMic Studio · 1. Canlı Stüdyo</h1>
+      <h2 class="lightbox-title" id="lightbox-title">ClearMic Studio · 1. Canlı Stüdyo</h2>
       <div class="lightbox-actions">
         <button type="button" class="lightbox-btn" id="lightbox-prev" data-i18n="lightboxPrev">← Önceki</button>
         <button type="button" class="lightbox-btn" id="lightbox-next" data-i18n="lightboxNext">Sonraki →</button>
@@ -2669,15 +2693,20 @@
     (function detectPlatformDownload() {
       const topBtn = document.getElementById('topbar-download-btn');
       if (!topBtn) return;
-      const ua = navigator.platform || navigator.userAgent;
-      const isMac = /Mac|iPhone|iPad/i.test(ua);
-      const isLinux = /Linux|X11/i.test(ua) && !/Android/i.test(navigator.userAgent || '');
+      const fullUa = navigator.userAgent || '';
+      const plat = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || fullUa;
+      const isIOS = /iPhone|iPad|iPod/i.test(fullUa) || (/Mac/i.test(plat) && navigator.maxTouchPoints > 1);
+      const isMac = !isIOS && /Mac/i.test(plat);
+      const isLinux = /Linux|X11/i.test(plat) && !/Android/i.test(fullUa);
       if (isMac) {
         topBtn.href = '/downloads/ClearMic-macOS.dmg';
         topBtn.setAttribute('download', 'ClearMic-macOS.dmg');
       } else if (isLinux) {
         topBtn.href = '/downloads/ClearMic-Linux.tar.gz';
         topBtn.setAttribute('download', 'ClearMic-Linux.tar.gz');
+      } else if (isIOS || /Android/i.test(fullUa)) {
+        topBtn.href = 'https://github.com/Andacbasaran/ClearMic/releases/latest';
+        topBtn.removeAttribute('download');
       }
     })();
 
@@ -3323,7 +3352,8 @@
 
       if (persist) {
         try { localStorage.setItem("cm_lang", normalized); } catch (_) {}
-        document.cookie = `cm_lang=${normalized}; path=/; max-age=31536000; SameSite=Lax`;
+        const secureAttr = window.location.protocol === "https:" ? "; Secure" : "";
+        document.cookie = `cm_lang=${normalized}; path=/; max-age=31536000; SameSite=Lax${secureAttr}`;
 
         const currentPath = window.location.pathname.replace(/\/+$/, "");
         if (currentPath === "/tr" || currentPath === "/en") {

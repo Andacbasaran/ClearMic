@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import dataclasses
 import os
+import threading
 import time
 
 import numpy as np
@@ -82,6 +84,7 @@ from clearmic.updater import (
     UpdateDownloadThread,
     UpdateInfo,
     apply_downloaded_update,
+    is_trusted_url,
 )
 
 
@@ -90,9 +93,20 @@ class ModelDownloadThread(QThread):
     finished_ok = pyqtSignal()
     failed = pyqtSignal(str)
 
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self._cancel_event = threading.Event()
+
+    def cancel(self) -> None:
+        self._cancel_event.set()
+
     def run(self) -> None:
         try:
-            download_model(GTCRN_MODEL, progress_callback=self.progress.emit)
+            download_model(
+                GTCRN_MODEL,
+                progress_callback=self.progress.emit,
+                cancel_check=self._cancel_event.is_set,
+            )
             self.finished_ok.emit()
         except Exception as exc:
             self.failed.emit(str(exc))
@@ -106,13 +120,19 @@ class WavBatchCleanThread(QThread):
     def __init__(self, paths: list[str], config: ClearMicConfig, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._paths = list(paths)
-        self._config = config
+        self._config = dataclasses.replace(config)
+        self._cancel_event = threading.Event()
+
+    def cancel(self) -> None:
+        self._cancel_event.set()
 
     def run(self) -> None:
         try:
             results: list[FileProcessResult] = []
             total = len(self._paths)
             for idx, src in enumerate(self._paths):
+                if self._cancel_event.is_set():
+                    break
                 name = os.path.basename(src)
                 self.progress.emit(idx, total, name)
                 res = process_wav_file(src, None, config=self._config)
@@ -181,12 +201,18 @@ class MainWindow(QMainWindow):
         self._outputs: list[AudioDevice] = []
         self._preset_buttons: dict[str, QPushButton] = {}
         self._force_quit = False
+        self._single_instance_server = None
         self._dl_thread: ModelDownloadThread | None = None
         self._wav_thread: WavBatchCleanThread | None = None
         self._bench_thread: QuickBenchmarkThread | None = None
         self._update_check_thread: UpdateCheckerThread | None = None
         self._update_dl_thread: UpdateDownloadThread | None = None
         self._latest_update_info: UpdateInfo | None = None
+
+        self._save_timer = QTimer(self)
+        self._save_timer.setSingleShot(True)
+        self._save_timer.setInterval(350)
+        self._save_timer.timeout.connect(self._flush_config_save)
 
         # Cached states to prevent 30 Hz unpolish()/polish() churn
         self._last_gate_state: str = ""
@@ -1132,6 +1158,15 @@ class MainWindow(QMainWindow):
         self._repolish(self._vbcable_badge)
 
     def _refresh_devices(self, restore_saved: bool = False) -> None:
+        prev_in_name = ""
+        prev_out_name = ""
+        cur_in_i = self._input_combo.currentIndex()
+        cur_out_i = self._output_combo.currentIndex()
+        if 0 <= cur_in_i < len(self._inputs):
+            prev_in_name = self._inputs[cur_in_i].name
+        if 0 <= cur_out_i < len(self._outputs):
+            prev_out_name = self._outputs[cur_out_i].name
+
         self._input_combo.blockSignals(True)
         self._output_combo.blockSignals(True)
         try:
@@ -1144,10 +1179,11 @@ class MainWindow(QMainWindow):
             for dev in self._outputs:
                 self._output_combo.addItem(dev.display_name, dev.index)
 
+            target_in = self._config.input_device_name if restore_saved else (prev_in_name or self._config.input_device_name)
             selected_in = None
-            if restore_saved and self._config.input_device_name:
+            if target_in:
                 selected_in = next(
-                    (i for i, d in enumerate(self._inputs) if d.name == self._config.input_device_name),
+                    (i for i, d in enumerate(self._inputs) if d.name == target_in),
                     None,
                 )
             if selected_in is None:
@@ -1157,10 +1193,11 @@ class MainWindow(QMainWindow):
             if selected_in is not None:
                 self._input_combo.setCurrentIndex(selected_in)
 
+            target_out = self._config.output_device_name if restore_saved else (prev_out_name or self._config.output_device_name)
             selected_out = None
-            if restore_saved and self._config.output_device_name:
+            if target_out:
                 selected_out = next(
-                    (i for i, d in enumerate(self._outputs) if d.name == self._config.output_device_name),
+                    (i for i, d in enumerate(self._outputs) if d.name == target_out),
                     None,
                 )
             if selected_out is None:
@@ -1505,6 +1542,14 @@ class MainWindow(QMainWindow):
         self._refresh_signal_chain()
         self._refresh_eq_curve()
         self._engine.update_config(self._config)
+        self._schedule_config_save()
+
+    def _schedule_config_save(self) -> None:
+        self._save_timer.start()
+
+    def _flush_config_save(self) -> None:
+        if self._save_timer.isActive():
+            self._save_timer.stop()
         self._config.save()
 
     def _on_startup_toggled(self) -> None:
@@ -1782,8 +1827,11 @@ class MainWindow(QMainWindow):
         info = self._latest_update_info
         if info is None:
             return
+        if self._update_dl_thread is not None and self._update_dl_thread.isRunning():
+            return
         if not info.has_direct_installer or UpdateDownloadThread is None:
-            QDesktopServices.openUrl(QUrl(info.release_url))
+            if is_trusted_url(info.release_url):
+                QDesktopServices.openUrl(QUrl(info.release_url))
             return
         self._update_download_btn.setEnabled(False)
         dest_dir = str(get_writable_data_dir() / "updates")
@@ -1793,6 +1841,7 @@ class MainWindow(QMainWindow):
                 f"Downloading update... {int(100 * dl / tot)}%" if tot > 0 else "Downloading update..."
             )
         )
+        self._update_dl_thread.status_changed.connect(self._update_status_lbl.setText)
         self._update_dl_thread.download_finished.connect(self._on_update_downloaded)
         self._update_dl_thread.start()
 
@@ -2015,6 +2064,30 @@ class MainWindow(QMainWindow):
 
     # ------------------------------------------------------------------ Window & Tray Lifecycle
 
+    def set_single_instance_server(self, server) -> None:
+        self._single_instance_server = server
+
+    def _shutdown_workers(self) -> None:
+        threads = (
+            self._dl_thread,
+            self._wav_thread,
+            self._bench_thread,
+            self._update_check_thread,
+            self._update_dl_thread,
+        )
+        for thread in threads:
+            if thread is None:
+                continue
+            if hasattr(thread, "cancel"):
+                try:
+                    thread.cancel()
+                except Exception:
+                    pass
+        for thread in threads:
+            if thread is not None and thread.isRunning():
+                thread.quit()
+                thread.wait(3000)
+
     def _toggle_visibility(self) -> None:
         if self.isVisible() and not self.isMinimized():
             self.hide()
@@ -2041,11 +2114,24 @@ class MainWindow(QMainWindow):
             return
 
         self._ui_timer.stop()
+        self._shutdown_workers()
         self._engine.stop()
-        self._config.save()
+        self._flush_config_save()
+        if self._single_instance_server is not None:
+            try:
+                self._single_instance_server.close()
+            except Exception:
+                pass
+            self._single_instance_server = None
         self._tray.hide()
         event.accept()
+        app = QApplication.instance()
+        if app is not None:
+            app.quit()
 
     def _quit_app(self) -> None:
         self._force_quit = True
         self.close()
+        app = QApplication.instance()
+        if app is not None:
+            app.quit()

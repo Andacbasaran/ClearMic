@@ -10,6 +10,12 @@ import numpy as np
 import onnxruntime as ort
 from scipy.signal import butter, sosfilt
 
+if hasattr(ort, "disable_telemetry_events"):
+    try:
+        ort.disable_telemetry_events()
+    except Exception:
+        pass
+
 
 class BaseDenoiser(ABC):
     """Base interface for streaming mono float32 audio denoisers."""
@@ -66,27 +72,54 @@ class _StatefulResampler3x:
         self._interp_sos = butter(6, 7200.0 / 24000.0, btype="lowpass", output="sos")
         self._decim_zi = np.zeros((self._decim_sos.shape[0], 2), dtype=np.float64)
         self._interp_zi = np.zeros((self._interp_sos.shape[0], 2), dtype=np.float64)
+        self._decim_phase: int = 0
+        self._up_remainder = np.zeros(0, dtype=np.float32)
 
     def reset(self) -> None:
         self._decim_zi.fill(0.0)
         self._interp_zi.fill(0.0)
+        self._decim_phase = 0
+        self._up_remainder = np.zeros(0, dtype=np.float32)
 
     def downsample(self, audio_sr: np.ndarray) -> np.ndarray:
+        n = audio_sr.size
+        if n == 0:
+            return np.zeros(0, dtype=np.float32)
         filtered, self._decim_zi = sosfilt(
             self._decim_sos, audio_sr.astype(np.float64, copy=False), zi=self._decim_zi
         )
-        return filtered[::3].astype(np.float32)
+        phase = self._decim_phase
+        if phase >= n:
+            self._decim_phase = phase - n
+            return np.zeros(0, dtype=np.float32)
+        out = filtered[phase::3].astype(np.float32)
+        self._decim_phase = (phase + 3 * out.size) - n
+        return out
 
     def upsample(self, audio_16k: np.ndarray, target_len: int) -> np.ndarray:
-        up = np.zeros(audio_16k.size * 3, dtype=np.float64)
-        up[::3] = audio_16k.astype(np.float64, copy=False) * 3.0
-        filtered, self._interp_zi = sosfilt(self._interp_sos, up, zi=self._interp_zi)
-        out = filtered.astype(np.float32)
-        if out.size == target_len:
+        if target_len <= 0:
+            return np.zeros(0, dtype=np.float32)
+        if audio_16k.size > 0:
+            up = np.zeros(audio_16k.size * 3, dtype=np.float64)
+            up[::3] = audio_16k.astype(np.float64, copy=False) * 3.0
+            filtered, self._interp_zi = sosfilt(self._interp_sos, up, zi=self._interp_zi)
+            chunk = filtered.astype(np.float32)
+            buf = (
+                np.concatenate((self._up_remainder, chunk))
+                if self._up_remainder.size > 0
+                else chunk
+            )
+        else:
+            buf = self._up_remainder
+
+        if buf.size >= target_len:
+            out = buf[:target_len]
+            self._up_remainder = buf[target_len:].copy()
             return out
-        if out.size > target_len:
-            return out[:target_len]
-        return np.pad(out, (0, target_len - out.size))
+
+        pad = np.zeros(target_len - buf.size, dtype=np.float32)
+        self._up_remainder = np.zeros(0, dtype=np.float32)
+        return np.concatenate((buf, pad))
 
 
 class _StatefulFractionalResampler:
@@ -97,7 +130,7 @@ class _StatefulFractionalResampler:
         self.model_sr = int(model_sr)
         self._down_ratio = self.sample_rate / float(self.model_sr)
         self._up_ratio = self.model_sr / float(self.sample_rate)
-        self.GROUP_DELAY_SAMPLES = max(4, int(round(5.0 * self.sample_rate / 16000.0)))
+        self.GROUP_DELAY_SAMPLES = max(4, int(round(6.0 * self.sample_rate / 16000.0)))
 
         cutoff = min(7200.0, 0.44 * min(self.sample_rate, self.model_sr))
         self._decim_sos = butter(
@@ -116,8 +149,8 @@ class _StatefulFractionalResampler:
     def reset(self) -> None:
         self._decim_zi.fill(0.0)
         self._interp_zi.fill(0.0)
-        self._prev_in_tail.fill(0.0)
-        self._prev_out_tail.fill(0.0)
+        self._prev_in_tail = np.zeros(1, dtype=np.float64)
+        self._prev_out_tail = np.zeros(1, dtype=np.float64)
         self._down_phase = 0.0
         self._up_phase = 0.0
 
@@ -129,19 +162,19 @@ class _StatefulFractionalResampler:
             return np.zeros(0, dtype=np.float32)
 
         buf = np.concatenate((self._prev_in_tail, filtered))
-        self._prev_in_tail[0] = filtered[-1]
+        self._prev_in_tail = np.array([filtered[-1]], dtype=np.float64)
 
-        # Continuous sample positions in buf (index 1 corresponds to filtered[0])
+        # Continuous sample positions in buf: buf[0]=prev_tail, buf[1]=filtered[0], buf[M]=filtered[-1]
         start = 1.0 + self._down_phase
-        end = float(buf.size)
-        if start >= end:
+        end = float(buf.size - 1)
+        if start > end + 1e-12:
             self._down_phase -= filtered.size
             return np.zeros(0, dtype=np.float32)
 
-        n_out = int(np.floor((end - 1e-9 - start) / self._down_ratio)) + 1
+        n_out = int(np.floor((end - start + 1e-12) / self._down_ratio)) + 1
         pos = start + np.arange(n_out, dtype=np.float64) * self._down_ratio
         idx0 = np.clip(np.floor(pos).astype(np.int64), 0, buf.size - 2)
-        frac = pos - idx0
+        frac = np.clip(pos - idx0, 0.0, 1.0)
         out = (1.0 - frac) * buf[idx0] + frac * buf[idx0 + 1]
         self._down_phase = float((start + n_out * self._down_ratio) - buf.size)
         return out.astype(np.float32)
@@ -149,16 +182,30 @@ class _StatefulFractionalResampler:
     def upsample(self, audio_16k: np.ndarray, target_len: int) -> np.ndarray:
         if target_len <= 0:
             return np.zeros(0, dtype=np.float32)
-        if audio_16k.size == 0:
-            return np.zeros(target_len, dtype=np.float32)
 
-        src = np.concatenate((self._prev_out_tail, audio_16k.astype(np.float64, copy=False)))
-        self._prev_out_tail[0] = float(audio_16k[-1])
+        if audio_16k.size > 0:
+            src = np.concatenate((self._prev_out_tail, audio_16k.astype(np.float64, copy=False)))
+        else:
+            src = self._prev_out_tail
 
-        pos = np.linspace(1.0, float(src.size - 1), target_len, endpoint=True, dtype=np.float64)
-        idx0 = np.clip(np.floor(pos).astype(np.int64), 0, max(0, src.size - 2))
-        frac = np.clip(pos - idx0, 0.0, 1.0)
-        interp = (1.0 - frac) * src[idx0] + frac * src[np.minimum(idx0 + 1, src.size - 1)]
+        if src.size < 2:
+            smoothed, self._interp_zi = sosfilt(
+                self._interp_sos, np.zeros(target_len, dtype=np.float64), zi=self._interp_zi
+            )
+            return smoothed.astype(np.float32)
+
+        pos = self._up_phase + np.arange(target_len, dtype=np.float64) * self._up_ratio
+        max_pos = float(src.size - 1)
+        clamped_pos = np.clip(pos, 0.0, max_pos)
+        idx0 = np.clip(np.floor(clamped_pos).astype(np.int64), 0, src.size - 2)
+        frac = np.clip(clamped_pos - idx0, 0.0, 1.0)
+        interp = (1.0 - frac) * src[idx0] + frac * src[idx0 + 1]
+
+        next_pos = float(self._up_phase + target_len * self._up_ratio)
+        consume = min(max(0, int(np.floor(next_pos))), src.size - 1)
+        self._prev_out_tail = src[consume:].copy()
+        self._up_phase = next_pos - consume
+
         smoothed, self._interp_zi = sosfilt(self._interp_sos, interp, zi=self._interp_zi)
         return smoothed.astype(np.float32)
 

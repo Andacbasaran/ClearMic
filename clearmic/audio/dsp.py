@@ -111,10 +111,12 @@ class HighPassFilter:
 
     def configure(self, sample_rate: int, cutoff_hz: float) -> None:
         if sample_rate != self.sample_rate or abs(cutoff_hz - self.cutoff_hz) > 0.5:
+            reset_state = sample_rate != self.sample_rate
             self.sample_rate = sample_rate
             self.cutoff_hz = cutoff_hz
             self._sos = self._design(sample_rate, cutoff_hz)
-            self._zi = np.zeros((self._sos.shape[0], 2), dtype=np.float64)
+            if reset_state or self._zi.shape != (self._sos.shape[0], 2):
+                self._zi = np.zeros((self._sos.shape[0], 2), dtype=np.float64)
 
     def reset(self) -> None:
         self._zi = np.zeros((self._sos.shape[0], 2), dtype=np.float64)
@@ -462,13 +464,22 @@ class AutomaticGainControl:
 
 
 def soft_limit(audio: np.ndarray, ceiling: float = 0.95) -> np.ndarray:
-    """Transparent tanh soft limiter preventing harsh digital clipping."""
+    """C1-continuous soft-knee limiter: linear below 0.96 * ceiling, smooth tanh up to ceiling."""
     if audio.size == 0:
         return audio
-    peak = float(np.max(np.abs(audio)))
-    if peak <= ceiling:
-        return audio
-    return (np.tanh(audio / ceiling) * ceiling).astype(np.float32)
+    ceil = max(1e-6, float(ceiling))
+    knee = 0.96 * ceil
+    headroom = ceil - knee
+    x = audio.astype(np.float32, copy=False)
+    abs_x = np.abs(x)
+    if float(np.max(abs_x)) <= knee:
+        return x
+    out = x.copy()
+    mask = abs_x > knee
+    excess = (abs_x[mask].astype(np.float64) - knee) / headroom
+    limited = knee + headroom * np.tanh(excess)
+    out[mask] = (np.sign(x[mask]) * limited).astype(np.float32)
+    return out
 
 
 @dataclass

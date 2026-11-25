@@ -15,6 +15,8 @@ except Exception:  # pragma: no cover - headless environments without PulseAudio
 
 
 def _negotiate_playback_channels(device_index: int | None) -> int:
+    if sd is None:
+        return 1
     try:
         info = sd.query_devices(device_index, kind="output")
         max_ch = int(info.get("max_output_channels", 1))
@@ -25,6 +27,8 @@ def _negotiate_playback_channels(device_index: int | None) -> int:
 
 class ABTestRecorder:
     """Captures synchronized raw & cleaned audio buffers for instant live A/B auditioning."""
+
+    CROSSFADE_SAMPLES = 128
 
     def __init__(self, sample_rate: int = 48000, max_seconds: float = 8.0) -> None:
         self.sample_rate = int(sample_rate)
@@ -49,15 +53,18 @@ class ABTestRecorder:
 
     @property
     def is_recording(self) -> bool:
-        return self._recording
+        with self._lock:
+            return self._recording
 
     @property
     def is_playing(self) -> bool:
-        return self._playing
+        with self._lock:
+            return self._playing
 
     @property
     def playback_mode(self) -> str:
-        return self._play_mode
+        with self._lock:
+            return self._play_mode
 
     @property
     def playback_progress(self) -> float:
@@ -69,19 +76,22 @@ class ABTestRecorder:
 
     @property
     def has_recording(self) -> bool:
-        return self._clean_buffer.size > 0
+        with self._lock:
+            return self._clean_buffer.size > 0
 
     @property
     def duration_seconds(self) -> float:
-        if self.sample_rate <= 0:
-            return 0.0
-        return self._clean_buffer.size / float(self.sample_rate)
+        with self._lock:
+            if self.sample_rate <= 0:
+                return 0.0
+            return self._clean_buffer.size / float(self.sample_rate)
 
     @property
     def progress_ratio(self) -> float:
-        if self.max_samples <= 0:
-            return 0.0
-        return min(1.0, self._recorded_samples / float(self.max_samples))
+        with self._lock:
+            if self.max_samples <= 0:
+                return 0.0
+            return min(1.0, self._recorded_samples / float(self.max_samples))
 
     def start_recording(self, sample_rate: int = 48000) -> None:
         self.stop_playback()
@@ -95,8 +105,6 @@ class ABTestRecorder:
 
     def feed(self, raw_block: np.ndarray, clean_block: np.ndarray) -> bool:
         """Append a synchronized block from the audio callback. Returns True while recording."""
-        if not self._recording:
-            return False
         with self._lock:
             if not self._recording:
                 return False
@@ -131,8 +139,39 @@ class ABTestRecorder:
             if target != self._play_mode:
                 self._play_prev_mode = self._play_mode
                 self._play_mode = target
-                # Short 128-sample crossfade to avoid clicks when toggling live
-                self._play_fade_remaining = 128
+                # Short crossfade to avoid clicks when toggling live
+                self._play_fade_remaining = self.CROSSFADE_SAMPLES
+
+    def _render_playback_chunk_locked(self, frames: int) -> tuple[np.ndarray, bool]:
+        """Render the next mono playback chunk with continuous crossfade math. Caller holds `_lock`."""
+        total = self._clean_buffer.size
+        if self._play_pos >= total or not self._playing:
+            self._playing = False
+            return np.zeros(0, dtype=np.float32), True
+
+        end = min(total, self._play_pos + frames)
+        n = end - self._play_pos
+        cur_buf = self._clean_buffer if self._play_mode == "clean" else self._raw_buffer
+        chunk = cur_buf[self._play_pos : end].copy()
+
+        if self._play_fade_remaining > 0:
+            prev_buf = (
+                self._clean_buffer if self._play_prev_mode == "clean" else self._raw_buffer
+            )
+            prev_chunk = prev_buf[self._play_pos : end]
+            fade_n = min(n, self._play_fade_remaining)
+            fade_len = self.CROSSFADE_SAMPLES
+            t = (
+                (fade_len - self._play_fade_remaining) + np.arange(fade_n, dtype=np.float32)
+            ) / float(fade_len)
+            chunk[:fade_n] = (1.0 - t) * prev_chunk[:fade_n] + t * chunk[:fade_n]
+            self._play_fade_remaining -= fade_n
+
+        self._play_pos = end
+        finished = self._play_pos >= total
+        if finished:
+            self._playing = False
+        return chunk, finished
 
     def play(
         self,
@@ -142,8 +181,13 @@ class ABTestRecorder:
         restart: bool = True,
     ) -> None:
         """Play 'clean' or 'raw' recorded buffer; supports live mid-playback switching."""
+        if sd is None:
+            raise RuntimeError("PortAudio / sounddevice is not available for playback.")
+
         target = "raw" if mode == "raw" else "clean"
-        if not restart and self._playing and self._play_stream is not None:
+        with self._lock:
+            already_playing = self._playing and self._play_stream is not None
+        if not restart and already_playing:
             self.switch_playback_mode(target)
             return
 
@@ -158,34 +202,16 @@ class ABTestRecorder:
             sr = self.sample_rate
 
         out_ch = _negotiate_playback_channels(output_device_index)
+        stream_holder: list[sd.OutputStream | None] = [None]
 
         def _callback(outdata: np.ndarray, frames: int, _time_info: object, _status: object) -> None:
             with self._lock:
-                total = self._clean_buffer.size
-                if self._play_pos >= total or not self._playing:
-                    outdata.fill(0.0)
-                    self._playing = False
-                    raise sd.CallbackStop
+                chunk, finished = self._render_playback_chunk_locked(frames)
 
-                end = min(total, self._play_pos + frames)
-                n = end - self._play_pos
-                cur_buf = self._clean_buffer if self._play_mode == "clean" else self._raw_buffer
-                chunk = cur_buf[self._play_pos : end].copy()
-
-                if self._play_fade_remaining > 0:
-                    prev_buf = (
-                        self._clean_buffer if self._play_prev_mode == "clean" else self._raw_buffer
-                    )
-                    prev_chunk = prev_buf[self._play_pos : end]
-                    fade_n = min(n, self._play_fade_remaining)
-                    t = np.linspace(0.0, 1.0, fade_n, dtype=np.float32)
-                    chunk[:fade_n] = (1.0 - t) * prev_chunk[:fade_n] + t * chunk[:fade_n]
-                    self._play_fade_remaining -= fade_n
-
-                self._play_pos = end
-                finished = self._play_pos >= total
-                if finished:
-                    self._playing = False
+            n = chunk.size
+            if n == 0:
+                outdata.fill(0.0)
+                raise sd.CallbackStop
 
             if n < frames:
                 padded = np.zeros(frames, dtype=np.float32)
@@ -200,8 +226,31 @@ class ABTestRecorder:
             if finished:
                 raise sd.CallbackStop
 
+        def _on_finished() -> None:
+            with self._lock:
+                self._playing = False
+                target_stream = stream_holder[0]
+                if target_stream is not None and self._play_stream is target_stream:
+                    self._play_stream = None
+                else:
+                    target_stream = None
+            if target_stream is not None:
+                def _close_async(s: object) -> None:
+                    try:
+                        s.close()  # type: ignore[attr-defined]
+                    except Exception:
+                        pass
+
+                threading.Thread(
+                    target=_close_async,
+                    args=(target_stream,),
+                    daemon=True,
+                    name="ClearMic-PlaybackCleanup",
+                ).start()
+
         try:
-            self._playing = True
+            with self._lock:
+                self._playing = True
             stream = sd.OutputStream(
                 samplerate=sr,
                 device=output_device_index,
@@ -209,34 +258,47 @@ class ABTestRecorder:
                 dtype="float32",
                 blocksize=512,
                 callback=_callback,
+                finished_callback=_on_finished,
             )
-            self._play_stream = stream
+            stream_holder[0] = stream
+            with self._lock:
+                self._play_stream = stream
             stream.start()
         except Exception:
-            self._playing = False
-            self._play_stream = None
-            # Simple fallback via sd.play
             with self._lock:
+                self._playing = False
+                failed_stream = self._play_stream
+                self._play_stream = None
                 buf = self._clean_buffer if target == "clean" else self._raw_buffer
                 data = buf.copy()
-            if data.size > 0:
-                sd.stop()
-                sd.play(data, samplerate=sr, device=output_device_index)
+            if failed_stream is not None:
+                try:
+                    failed_stream.close()
+                except Exception:
+                    pass
+            if data.size > 0 and sd is not None:
+                try:
+                    sd.stop()
+                    sd.play(data, samplerate=sr, device=output_device_index)
+                except Exception:
+                    pass
 
     def stop_playback(self) -> None:
-        self._playing = False
-        stream = self._play_stream
-        self._play_stream = None
+        with self._lock:
+            self._playing = False
+            stream = self._play_stream
+            self._play_stream = None
         if stream is not None:
             try:
                 stream.stop()
                 stream.close()
             except Exception:
                 pass
-        try:
-            sd.stop()
-        except Exception:
-            pass
+        if sd is not None:
+            try:
+                sd.stop()
+            except Exception:
+                pass
 
     def save_wav(self, path: str | Path, mode: str = "clean") -> Path:
         """Export the captured 'clean' or 'raw' track to a 16-bit PCM WAV file."""

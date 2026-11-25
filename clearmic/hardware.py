@@ -6,6 +6,7 @@ import os
 import platform
 import subprocess
 import sys
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -165,16 +166,19 @@ def detect_physical_cores(logical_cores: int) -> int:
             from ctypes import wintypes
 
             kernel32 = ctypes.windll.kernel32
+            get_proc_info = kernel32.GetLogicalProcessorInformationEx
+            get_proc_info.argtypes = [
+                wintypes.DWORD,
+                ctypes.c_void_p,
+                ctypes.POINTER(wintypes.DWORD),
+            ]
+            get_proc_info.restype = wintypes.BOOL
             relation_processor_core = 0
             buf_len = wintypes.DWORD(0)
-            kernel32.GetLogicalProcessorInformationEx(
-                relation_processor_core, None, ctypes.byref(buf_len)
-            )
+            get_proc_info(relation_processor_core, None, ctypes.byref(buf_len))
             if buf_len.value > 0:
                 buf = ctypes.create_string_buffer(buf_len.value)
-                ok = kernel32.GetLogicalProcessorInformationEx(
-                    relation_processor_core, buf, ctypes.byref(buf_len)
-                )
+                ok = get_proc_info(relation_processor_core, buf, ctypes.byref(buf_len))
                 if ok:
                     raw = buf.raw
                     offset = 0
@@ -204,8 +208,11 @@ def detect_isa_features(arch: str | None = None) -> tuple[str, ...]:
     if sys.platform == "win32":
         try:
             import ctypes
+            from ctypes import wintypes
 
             is_feat = ctypes.windll.kernel32.IsProcessorFeaturePresent
+            is_feat.argtypes = [wintypes.DWORD]
+            is_feat.restype = wintypes.BOOL
             for code, name in (
                 (10, "sse2"),
                 (37, "sse4_1"),
@@ -213,7 +220,7 @@ def detect_isa_features(arch: str | None = None) -> tuple[str, ...]:
                 (39, "avx"),
                 (40, "avx2"),
                 (41, "avx512f"),
-                (29, "neon"),
+                (19, "neon"),
                 (43, "dotprod"),
             ):
                 try:
@@ -357,8 +364,15 @@ def get_writable_data_dir(preferred_dir: Path | str | None = None) -> Path:
     if _is_dir_writable(native):
         return native
     fallback = Path.home() / ".clearmic"
-    fallback.mkdir(parents=True, exist_ok=True)
-    return fallback
+    try:
+        fallback.mkdir(parents=True, exist_ok=True)
+        if _is_dir_writable(fallback):
+            return fallback
+    except OSError:
+        pass
+    temp_fallback = Path(tempfile.gettempdir()) / "clearmic"
+    temp_fallback.mkdir(parents=True, exist_ok=True)
+    return temp_fallback
 
 
 def format_hardware_summary(hw: HardwareProfile) -> str:

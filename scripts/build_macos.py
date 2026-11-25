@@ -136,6 +136,16 @@ def build_app_bundle(base_dir: Path, icns_path: Path | None, arch: str) -> Path:
         "clearmic",
         "--hidden-import",
         "PyQt6.QtNetwork",
+        "--hidden-import",
+        "scipy.signal",
+        "--hidden-import",
+        "scipy.io.wavfile",
+        "--hidden-import",
+        "sounddevice",
+        "--hidden-import",
+        "onnxruntime",
+        "--hidden-import",
+        "certifi",
     ]
     if icns_path and icns_path.is_file():
         cmd.extend(["--icon", str(icns_path), "--add-data", f"{icns_path}:assets"])

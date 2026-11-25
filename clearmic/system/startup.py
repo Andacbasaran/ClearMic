@@ -14,14 +14,19 @@ RUN_KEY_PATH = r"Software\Microsoft\Windows\CurrentVersion\Run"
 MACOS_LAUNCH_AGENT_LABEL = __bundle_id__
 
 
-def _startup_argv() -> list[str]:
+def _startup_argv(platform_name: str | None = None) -> list[str]:
+    plat = (platform_name or sys.platform).lower()
+    if plat.startswith("linux"):
+        appimage = os.environ.get("APPIMAGE", "").strip()
+        if appimage:
+            return [appimage, "--minimized"]
     if getattr(sys, "frozen", False):
         return [str(Path(sys.executable).resolve()), "--minimized"]
     root = Path(__file__).resolve().parents[2]
     entry = root / "main.py"
     if not entry.exists():
         entry = root / "run.py"
-    if sys.platform == "win32":
+    if plat == "win32":
         pythonw = Path(sys.executable).with_name("pythonw.exe")
         exe = pythonw if pythonw.exists() else Path(sys.executable)
     else:
@@ -29,8 +34,10 @@ def _startup_argv() -> list[str]:
     return [str(exe), str(entry), "--minimized"]
 
 
-def _startup_command() -> str:
-    return " ".join(f'"{arg}"' if " " in arg else arg for arg in _startup_argv())
+def _startup_command(platform_name: str | None = None) -> str:
+    return " ".join(
+        f'"{arg}"' if " " in arg else arg for arg in _startup_argv(platform_name=platform_name)
+    )
 
 
 def get_macos_plist_path(home_dir: Path | None = None) -> Path:
@@ -93,7 +100,9 @@ def set_startup_enabled(
                 winreg.HKEY_CURRENT_USER, RUN_KEY_PATH, 0, winreg.KEY_SET_VALUE
             ) as key:
                 if enabled:
-                    winreg.SetValueEx(key, APP_REG_NAME, 0, winreg.REG_SZ, _startup_command())
+                    winreg.SetValueEx(
+                        key, APP_REG_NAME, 0, winreg.REG_SZ, _startup_command(platform_name=plat)
+                    )
                 else:
                     try:
                         winreg.DeleteValue(key, APP_REG_NAME)
@@ -110,7 +119,7 @@ def set_startup_enabled(
                 plist_path.parent.mkdir(parents=True, exist_ok=True)
                 payload = {
                     "Label": MACOS_LAUNCH_AGENT_LABEL,
-                    "ProgramArguments": _startup_argv(),
+                    "ProgramArguments": _startup_argv(platform_name=plat),
                     "RunAtLoad": True,
                     "KeepAlive": False,
                     "ProcessType": "Interactive",
@@ -134,7 +143,7 @@ def set_startup_enabled(
                     "Version=1.0\n"
                     "Name=ClearMic\n"
                     "Comment=Offline AI Microphone Noise Suppressor & Voice Studio\n"
-                    f"Exec={_startup_command()}\n"
+                    f"Exec={_startup_command(platform_name=plat)}\n"
                     "Icon=clearmic\n"
                     "Terminal=false\n"
                     "Categories=AudioVideo;Audio;\n"

@@ -140,7 +140,7 @@ def assemble_appdir(base_dir: Path, bundle_dir: Path) -> Path:
 
     usr_bin = appdir / "usr" / "bin"
     usr_apps = appdir / "usr" / "share" / "applications"
-    usr_icons = appdir / "usr" / "share" / "icons" / "hicolor" / "256x256" / "apps"
+    usr_icons = appdir / "usr" / "share" / "icons" / "hicolor" / "512x512" / "apps"
     usr_apps.mkdir(parents=True, exist_ok=True)
     usr_icons.mkdir(parents=True, exist_ok=True)
 

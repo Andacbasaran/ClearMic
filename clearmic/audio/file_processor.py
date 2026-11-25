@@ -72,6 +72,7 @@ def _process_mono_channel(
     sample_rate: int,
     config: ClearMicConfig,
     progress_cb: Callable[[int, int], None] | None = None,
+    cancel_check: Callable[[], bool] | None = None,
 ) -> tuple[np.ndarray, str, float]:
     hpf = HighPassFilter(sample_rate, config.highpass_cutoff_hz)
     denoiser = _create_denoiser(config, sample_rate)
@@ -115,6 +116,8 @@ def _process_mono_channel(
     post_dbs: list[float] = []
 
     for start in range(0, n_total, block_size):
+        if cancel_check and cancel_check():
+            raise RuntimeError("WAV processing cancelled.")
         end = min(n_total, start + block_size)
         blk = channel[start:end].astype(np.float32, copy=True)
         if abs(float(in_gain) - 1.0) > 1e-4:
@@ -164,6 +167,7 @@ def process_wav_file(
     output_path: str | Path | None = None,
     config: ClearMicConfig | None = None,
     progress_callback: Callable[[int, int], None] | None = None,
+    cancel_check: Callable[[], bool] | None = None,
 ) -> FileProcessResult:
     """Clean a single .wav recording offline using the full ClearMic AI + Broadcast DSP chain."""
     in_path = Path(input_path)
@@ -198,6 +202,7 @@ def process_wav_file(
             sr,
             cfg,
             progress_cb=_ch_progress,
+            cancel_check=cancel_check,
         )
         cleaned_channels.append(clean_ch)
         denoiser_name = d_name

@@ -283,12 +283,23 @@ def get_default_output_device(outputs: list[AudioDevice]) -> AudioDevice | None:
     return outputs[0]
 
 
+def _pactl_list_has_name(stdout: str, target_name: str) -> bool:
+    for line in stdout.splitlines():
+        parts = line.split()
+        if len(parts) >= 2 and parts[1] == target_name:
+            return True
+        if target_name in parts:
+            return True
+    return False
+
+
 def create_linux_virtual_mic(
     sink_name: str = "ClearMic_Virtual_Sink",
     source_name: str = "ClearMic_Virtual_Mic",
 ) -> tuple[bool, str]:
     """Create a PipeWire/PulseAudio virtual microphone pair using `pactl`.
 
+    Verifies both sink and remapped source exist before reporting already active.
     Returns `(success, message)`.
     """
     pactl = shutil.which("pactl")
@@ -306,44 +317,63 @@ def create_linux_virtual_mic(
             timeout=5,
             check=False,
         )
-        if existing_sinks.returncode == 0 and sink_name in existing_sinks.stdout:
+        sink_exists = existing_sinks.returncode == 0 and _pactl_list_has_name(
+            existing_sinks.stdout, sink_name
+        )
+
+        source_exists = False
+        if sink_exists:
+            existing_sources = subprocess.run(
+                [pactl, "list", "short", "sources"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+                check=False,
+            )
+            source_exists = existing_sources.returncode == 0 and _pactl_list_has_name(
+                existing_sources.stdout, source_name
+            )
+
+        if sink_exists and source_exists:
             return (True, f"Virtual mic '{source_name}' is already active.")
 
-        sink_res = subprocess.run(
-            [
-                pactl,
-                "load-module",
-                "module-null-sink",
-                f"sink_name={sink_name}",
-                'sink_properties=device.description="ClearMic_Virtual_Output"',
-            ],
-            capture_output=True,
-            text=True,
-            timeout=5,
-            check=False,
-        )
-        if sink_res.returncode != 0:
-            return (False, f"Failed to create null sink: {sink_res.stderr.strip()}")
-
-        src_res = subprocess.run(
-            [
-                pactl,
-                "load-module",
-                "module-remap-source",
-                f"master={sink_name}.monitor",
-                f"source_name={source_name}",
-                'source_properties=device.description="ClearMic_Virtual_Mic"',
-            ],
-            capture_output=True,
-            text=True,
-            timeout=5,
-            check=False,
-        )
-        if src_res.returncode != 0:
-            return (
-                True,
-                f"Created null sink '{sink_name}' (select its Monitor as mic in Discord/OBS).",
+        if not sink_exists:
+            sink_res = subprocess.run(
+                [
+                    pactl,
+                    "load-module",
+                    "module-null-sink",
+                    f"sink_name={sink_name}",
+                    'sink_properties=device.description="ClearMic_Virtual_Output"',
+                ],
+                capture_output=True,
+                text=True,
+                timeout=5,
+                check=False,
             )
+            if sink_res.returncode != 0:
+                return (False, f"Failed to create null sink: {sink_res.stderr.strip()}")
+
+        if not source_exists:
+            src_res = subprocess.run(
+                [
+                    pactl,
+                    "load-module",
+                    "module-remap-source",
+                    f"master={sink_name}.monitor",
+                    f"source_name={source_name}",
+                    'source_properties=device.description="ClearMic_Virtual_Mic"',
+                ],
+                capture_output=True,
+                text=True,
+                timeout=5,
+                check=False,
+            )
+            if src_res.returncode != 0:
+                return (
+                    True,
+                    f"Created null sink '{sink_name}' (select its Monitor as mic in Discord/OBS).",
+                )
         return (True, f"Created PipeWire/PulseAudio virtual mic '{source_name}'.")
     except Exception as exc:
         return (False, f"pactl error: {exc}")
